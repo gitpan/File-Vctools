@@ -1,0 +1,45 @@
+File-Vctools Version 0.01
+
+Reading XML and providing path information based on a pull-parser.
+
+There aren't any machine dependencies, no C compiler is required.
+
+
+INSTALLATION
+
+To install this module, run the following commands:
+
+	perl Makefile.PL
+	make
+	make test
+	make install
+
+SUPPORT AND DOCUMENTATION
+
+After installing, you can find documentation for this module with the
+perldoc command.
+
+    perldoc File::Vctools
+
+You can also look for information at:
+
+    RT, CPAN's request tracker
+        http://rt.cpan.org/NoAuth/Bugs.html?Dist=File-Vctools
+
+    AnnoCPAN, Annotated CPAN documentation
+        http://annocpan.org/dist/File-Vctools
+
+    CPAN Ratings
+        http://cpanratings.perl.org/d/File-Vctools
+
+    Search CPAN
+        http://search.cpan.org/dist/File-Vctools/
+
+
+COPYRIGHT AND LICENSE
+
+Copyright (C) 2010 by Klaus Eichner
+
+All rights reserved. This program is free software; you can redistribute
+it and/or modify it under the terms of the artistic license,
+see http://www.opensource.org/licenses/artistic-license-1.0.php

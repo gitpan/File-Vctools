@@ -1,0 +1,29 @@
+=head1 NAME
+
+File::Vctools - Einfache Versions-Kontroll Werkzeuge mit diff.
+
+=head1 E<Uuml>BERSETZUNG
+
+This document is the German translation from English of the module File::Vctools. In order to
+get the Perl source code of the module, please see File/Vctools.pm
+
+Dieses Dokument ist die Deutsche E<Uuml>bersetzung aus dem Englischen des Moduls File::Vctools. Um
+den Perl Quelltext des Moduls zu lesen, gehen Sie bitte zur Datei File/Vctools.pm
+
+Die Deutsche E<Uuml>bersetzung wird bald erscheinen...
+
+=head1 AUTOR
+
+Klaus Eichner, March 2010
+
+=head1 COPYRIGHT UND LIZENZ
+
+Dieses ist der original Text auf Englisch:
+
+Copyright (C) 2010 by Klaus Eichner
+
+All rights reserved. This program is free software; you can redistribute
+it and/or modify it under the terms of the artistic license,
+see http://www.opensource.org/licenses/artistic-license-1.0.php
+
+=cut

@@ -1,0 +1,29 @@
+=head1 NAME
+
+File::Vctools - Outils de Controle de Versions simple avec diff.
+
+=head1 TRADUCTION
+
+This document is the French translation from English of the module File::Vctools. In order to
+get the Perl source code of the module, please see File/Vctools.pm
+
+Ce document est une traduction FranE<ccedil>aise de l'Anglais du module File::Vctools. Pour
+obtenir la source Perl du module, consultez le fichier File/Vctools.pm
+
+La traduction FranE<ccedil>aise va apparaitre bientE<ocirc>t...
+
+=head1 AUTEUR
+
+Klaus Eichner, Mars 2010
+
+=head1 COPYRIGHT ET LICENSE
+
+Voici le texte original en Anglais:
+
+Copyright (C) 2010 by Klaus Eichner
+
+All rights reserved. This program is free software; you can redistribute
+it and/or modify it under the terms of the artistic license,
+see http://www.opensource.org/licenses/artistic-license-1.0.php
+
+=cut

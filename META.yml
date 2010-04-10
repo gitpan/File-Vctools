@@ -1,0 +1,23 @@
+---
+abstract: 'Simple Version Control Tools using diff'
+author:
+  - 'Klaus Eichner, <klaus03@gmail.com>, March 2010'
+configure_requires:
+  Module::Build: 0.36
+generated_by: 'Module::Build version 0.3603'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: File-Vctools
+provides:
+  File::Vctools:
+    file: lib/File/Vctools.pm
+    version: 0.01
+requires:
+  Algorithm::Diff: 1.1902
+  File::Slurp: 9999.12
+  XML::Reader: 0.32
+resources:
+  license: http://dev.perl.org/licenses/
+version: 0.01
