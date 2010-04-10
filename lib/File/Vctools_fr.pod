@@ -1,6 +1,6 @@
 =head1 NAME
 
-File::Vctools - Outils de Controle de Versions simple avec diff.
+File::Vctools_fr - Outils de Controle de Versions simple avec diff.
 
 =head1 TRADUCTION
 

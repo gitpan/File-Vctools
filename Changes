@@ -1,4 +1,7 @@
 Revision history for File-Vctools
 
-0.01    30 Mar 2009
+0.01    30 Mar 2010
         First version, released on an unsuspecting world.
+
+0.02    10 Apr 2010
+        Change header in documentation File-Vctools_de.pod and File-Vctools_fr.pod

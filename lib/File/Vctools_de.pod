@@ -1,6 +1,6 @@
 =head1 NAME
 
-File::Vctools - Einfache Versions-Kontroll Werkzeuge mit diff.
+File::Vctools_de - Einfache Versions-Kontroll Werkzeuge mit diff.
 
 =head1 E<Uuml>BERSETZUNG
 
