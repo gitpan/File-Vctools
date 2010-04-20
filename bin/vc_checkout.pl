@@ -86,9 +86,9 @@ unless (defined $VcArchDir) {
 
 my $pth_clist = File::Spec->rel2abs(File::Spec->catfile($VcArchDir, $cnst_clist));
 
-# ****************************
-# * reading 'D_Coutlist.dat' *
-# ****************************
+# ************************************
+# reading 'D_Coutlist.dat' into $pmtab
+# ************************************
 
 my $coutlist = {};
 
@@ -99,13 +99,27 @@ if (-f $pth_clist) {
     }
 }
 
+for (keys %$coutlist) {
+    unless (m{\A D_}xms) {
+        die "Error-0042: in retrieve('$pth_clist') found key = '$_', but expected /^D_/";
+    }
+}
+
+unless (exists $coutlist->{D_pmtab}) {
+    $coutlist->{D_pmtab} = {};
+}
+
+my $pmtab = $coutlist->{D_pmtab};
+
+#~ use Data::Dumper; print Dumper $pmtab;
+
 # *************************************************
 # * check that each $dirlist exists in $archlist. *
 # *************************************************
 
-my %archlist = map  { lc $coutlist->{$_}{$cnst_worklc}{id} => $coutlist->{$_}{$cnst_worklc} }
-               grep { exists $coutlist->{$_}{$cnst_worklc}; }
-               keys %$coutlist;
+my %archlist = map  { lc $pmtab->{$_}{$cnst_worklc}{id} => $pmtab->{$_}{$cnst_worklc} }
+               grep { exists $pmtab->{$_}{$cnst_worklc}; }
+               keys %$pmtab;
 
 my %dirlist  = -e $cnst_workdir ? map { lc $_ => 1 } read_dir $cnst_workdir : ();
 
@@ -113,7 +127,7 @@ delete $dirlist{lc $cnst_xmllist}; # don't look at the xml checkout list
 
 my %stemlist = map { ($_ =~ m{\A (.*) \. [^\.]* \z}xms ? $1 : $_) => 1 } keys %dirlist;
 
-# use Data::Dumper; print Dumper { coutlist => $coutlist, archlist => \%archlist, dirlist => \%dirlist };
+# use Data::Dumper; print Dumper { coutlist => $pmtab, archlist => \%archlist, dirlist => \%dirlist };
 
 for (keys %dirlist) {
     unless (exists $archlist{$_}) {
@@ -201,9 +215,9 @@ for my $name_rel (@flist) {
     $showname =~ s/\A\Q$ENV{USERPROFILE}/~/xms if defined $ENV{USERPROFILE};
     # fin   modif Klaus Eichner, 2010-02-19:
 
-    if (exists $coutlist->{$name_lc}{$cnst_worklc}{id}) {
+    if (exists $pmtab->{$name_lc}{$cnst_worklc}{id}) {
         printf "Ckout [%3d/%3d]             %-30s -- %s\n",
-          $line_ctr, $line_max, $coutlist->{$name_lc}{$cnst_worklc}{id}, $showname;
+          $line_ctr, $line_max, $pmtab->{$name_lc}{$cnst_worklc}{id}, $showname;
         next;
     }
 
@@ -234,7 +248,7 @@ for my $name_rel (@flist) {
        arch  => $name_arch,
     };
 
-    $coutlist->{$name_lc}{$cnst_worklc} = $block;
+    $pmtab->{$name_lc}{$cnst_worklc} = $block;
     $updctr++;
 
     unless (-e $name_afull) {

@@ -119,13 +119,62 @@ unless ($opts{z}) {
 # reading 'D_Coutlist.dat' into $pmtab
 # ************************************
 
-my $pmtab = {};
+my $coutlist = {};
 
 if (-f $pth_clist) {
-    $pmtab = retrieve($pth_clist);
-    unless (defined $pmtab) {
+    $coutlist = retrieve($pth_clist);
+    unless (defined $coutlist) {
         die "Error-0050: retrieve('$pth_clist') returned undef";
     }
+}
+
+for (keys %$coutlist) {
+    unless (m{\A D_}xms) {
+        die "Error-0052: in retrieve('$pth_clist') found key = '$_', but expected /^D_/";
+    }
+}
+
+unless (exists $coutlist->{D_pmtab}) {
+    $coutlist->{D_pmtab} = {};
+}
+
+unless (exists $coutlist->{D_pmdef}) {
+    $coutlist->{D_pmdef} = {};
+}
+
+my $pmtab = $coutlist->{D_pmtab};
+my $pmdef = $coutlist->{D_pmdef};
+
+unless ($opts{z}) {
+    my $loc_dir  = '* Reset *';
+    my $loc_path = '';
+    my $loc_show = '';
+
+    if (defined $pmdef->{project}) {
+        my @loc_ele = File::Spec->splitdir($pmdef->{project});
+        if (@loc_ele > 1) {
+            $loc_dir = pop @loc_ele;
+        }
+        else {
+            $loc_dir = '?';
+        }
+
+        $loc_path = File::Spec->catfile(@loc_ele);
+
+        # début modif Klaus Eichner, 2010-02-19:
+        $loc_show = $loc_path;
+        $loc_show =~ s/\A\Q$ENV{USERPROFILE}/~/xms if defined $ENV{USERPROFILE};
+        # fin   modif Klaus Eichner, 2010-02-19:
+    }
+
+    printf "Project %-15s", $loc_dir;
+
+    if ($loc_show ne '') {
+        print " ==> $loc_show";
+    }
+
+    say '';
+    say '';
 }
 
 #~ use Data::Dumper; print Dumper $pmtab;
@@ -389,5 +438,5 @@ if ($opts{c} and $g_upd_leaf + $g_upd_branch + $g_upd_stem > 0) {
         say "Writing (leaf=$g_upd_leaf, branch=$g_upd_branch, stem=$g_upd_stem) to $show_pth_clist";
         say '';
     }
-    store $pmtab, $pth_clist or die "Error-0100: Can't store into '$pth_clist'";
+    store $coutlist, $pth_clist or die "Error-0100: Can't store into '$pth_clist'";
 }

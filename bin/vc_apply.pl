@@ -39,7 +39,9 @@ my $cnst_paramxml = 'vc_parameter.xml';
 my $cnst_xmllist  = 'B_Flist.xml';
 my $cnst_clist    = 'D_Coutlist.dat';
 my $cnst_VcParam  = File::Spec->catfile(($ENV{'VCTOOLDIR'} || File::Spec->rel2abs(dirname($0))), $cnst_paramxml);
-my $cnst_workabs  = File::Spec->catfile(File::Spec->rel2abs('.'), $cnst_workdir);
+my $cnst_projabs  = File::Spec->rel2abs('.');
+my $cnst_projlc   = lc $cnst_projabs;
+my $cnst_workabs  = File::Spec->catfile($cnst_projabs, $cnst_workdir);
 my $cnst_worklc   = lc $cnst_workabs;
 
 my $magic_file = File::Spec->catfile($cnst_cmddir, 'r_apply.pl');
@@ -81,9 +83,9 @@ unless (defined $DiffProgram) {
 my $pth_clist = File::Spec->rel2abs(File::Spec->catfile($VcArchDir, $cnst_clist));
 my $difftool  = ($DiffProgram =~ m{\.pl \z}xmsi ? $q.$^X.$q.' ' : '').$q.$DiffProgram.$q;
 
-# ****************************
-# * reading 'D_Coutlist.dat' *
-# ****************************
+# ************************************
+# reading 'D_Coutlist.dat' into $pmtab
+# ************************************
 
 my $coutlist = {};
 
@@ -94,19 +96,47 @@ if (-f $pth_clist) {
     }
 }
 
+for (keys %$coutlist) {
+    unless (m{\A D_}xms) {
+        die "Error-0062: in retrieve('$pth_clist') found key = '$_', but expected /^D_/";
+    }
+}
+
+unless (exists $coutlist->{D_pmtab}) {
+    $coutlist->{D_pmtab} = {};
+}
+
+unless (exists $coutlist->{D_pmdef}) {
+    $coutlist->{D_pmdef} = {};
+}
+
+my $pmtab = $coutlist->{D_pmtab};
+my $pmdef = $coutlist->{D_pmdef};
+
+if (defined $pmdef->{project}) {
+    unless ($pmdef->{project} eq $cnst_projabs) {
+        die "Error-0064: Current project is '$cnst_projabs', but another project '$pmdef->{project}' is already active";
+    }
+}
+else {
+    $pmdef->{project} = $cnst_projabs;
+}
+
+#~ use Data::Dumper; print Dumper $pmtab;
+
 # *************************************************
 # * check that each $dirlist exists in $archlist. *
 # *************************************************
 
-my %archlist = map  { lc $coutlist->{$_}{$cnst_worklc}{id} => [$coutlist->{$_}{$cnst_worklc}, $_] }
-               grep { exists $coutlist->{$_}{$cnst_worklc}; }
-               keys %$coutlist;
+my %archlist = map  { lc $pmtab->{$_}{$cnst_worklc}{id} => [$pmtab->{$_}{$cnst_worklc}, $_] }
+               grep { exists $pmtab->{$_}{$cnst_worklc}; }
+               keys %$pmtab;
 
 my %dirlist  = -e $cnst_workdir ? map { lc $_ => 1 } read_dir $cnst_workdir : ();
 
 delete $dirlist{lc $cnst_xmllist}; # don't look at the xml checkout list
 
-# use Data::Dumper; print Dumper { coutlist => $coutlist, archlist => \%archlist, dirlist => \%dirlist };
+# use Data::Dumper; print Dumper { coutlist => $pmtab, archlist => \%archlist, dirlist => \%dirlist };
 
 for (keys %dirlist) {
     unless (exists $archlist{$_}) {
@@ -222,8 +252,7 @@ for (sort keys %archlist) {
             copy $file_arch, $p_orig or die "Error-0120: Can't copy('$file_arch', '$p_orig') because $!";
         }
 
-        delete $coutlist->{$p_key}{$cnst_worklc};
-        store $coutlist, $pth_clist or die "Error-0130: Can't store into '$pth_clist'";
+        delete $pmtab->{$p_key}{$cnst_worklc};
     }
     elsif ($ln_comp == 1) {
         $action = '----------------->';
@@ -264,3 +293,5 @@ for (sort keys %archlist) {
       ($ln_comp == 3 || $ln_comp == 4 ? ' (** Backout **)' : ''),
       ;
 }
+
+store $coutlist, $pth_clist or die "Error-0180: Can't store into '$pth_clist'";

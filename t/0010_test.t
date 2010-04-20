@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use 5.010;
 
-use Test::More tests => 178;
+use Test::More tests => 187;
 
 use File::Vctools qw(get_mpath get_difftool);
 use Cwd;
@@ -371,6 +371,31 @@ preparations();
     ok($write_ok,    'upd-prj02-exmp-005: file successfully written back');
 }
 
+# applying Prj_02 (while Prj_01 is still active) must fail:
+# *********************************************************
+
+{
+    my ($stdout, $stderr, $rc) = my_system($^X,
+      File::Spec->catdir($mpath, 'vc_apply.pl'),
+    );
+
+    ok($rc != 0,                                'co-prj02-apfail: rc is not zero');
+    like($stderr, qr{already \s active}xms,     'co-prj02-apfail: STDERR contains >>...already active...<<');
+}
+
+# resetting projects:
+# *******************
+
+{
+    my ($stdout, $stderr, $rc) = my_system($^X,
+      File::Spec->catdir($mpath, 'vc_reset.pl'),
+    );
+
+    is($rc, 0,                                  'co-prj02-reset: rc is zero');
+    is($stderr, '',                             'co-prj02-reset: check STDERR');
+}
+
+
 # applying changes in the 2 files of Prj_02:
 # ******************************************
 
@@ -391,11 +416,11 @@ preparations();
     my $act_test = $stdout =~ m{F_test-003_Z001\.txt    \s+ (\w+ \s+ --I=\d+/D=\d+--> \s+ \w+)}xms ? $1 : '?';
     my $act_exmp = $stdout =~ m{F_example-005_Z001\.txt \s+ (\w+ \s+ --I=\d+/D=\d+--> \s+ \w+)}xms ? $1 : '?';
 
-    is($act_test, 'WRK --I=0010/D=0007--> ORG', 'co-prj02-apply: message >>test<<');
+    is($act_test, 'WRK --I=0006/D=0004--> ORG', 'co-prj02-apply: message >>test<<');
     is($act_exmp, 'WRK --I=0006/D=0003--> ORG', 'co-prj02-apply: message >>exmp<<');
     is($rc, 0,                                  'co-prj02-apply: rc is zero');
     is($stderr, '',                             'co-prj02-apply: check STDERR');
-    is($nbl_test_bef, 34,                       'co-prj02-apply: nb lines >>test<< before');
+    is($nbl_test_bef, 35,                       'co-prj02-apply: nb lines >>test<< before');
     is($nbl_exmp_bef, 35,                       'co-prj02-apply: nb lines >>exmp<< before');
     is($nbl_test_aft, 37,                       'co-prj02-apply: nb lines >>test<< after');
     is($nbl_exmp_aft, 38,                       'co-prj02-apply: nb lines >>exmp<< after');
@@ -441,11 +466,11 @@ preparations();
     my $nbl_exp4 = do{ my $content = read_file($fn_exp4, err_mode => 'quiet') // '?'; my $nb = () = $content =~ m{(\n)}xmsg; $nb; };
     my $nbl_exp5 = do{ my $content = read_file($fn_exp5, err_mode => 'quiet') // '?'; my $nb = () = $content =~ m{(\n)}xmsg; $nb; };
 
-    is($nbl_tst3, 34, 'apply-prj1: nb lines >>test-003<<');
-    is($nbl_exp4, 34, 'apply-prj1: nb lines >>example-004<<');
-    is($nbl_exp5, 35, 'apply-prj1: nb lines >>example-005<<');
-    is($chg, 1,       'apply-prj1: modification after apply - one line has been modified');
-    ok($write_ok,     'apply-prj1: modification after apply - file successfully written back');
+    is($nbl_tst3, 34, 'apply-prj1a: nb lines >>test-003<<');
+    is($nbl_exp4, 34, 'apply-prj1a: nb lines >>example-004<<');
+    is($nbl_exp5, 35, 'apply-prj1a: nb lines >>example-005<<');
+    is($chg, 1,       'apply-prj1a: modification after apply - one line has been modified');
+    ok($write_ok,     'apply-prj1a: modification after apply - file successfully written back');
 }
 
 {
@@ -503,16 +528,40 @@ preparations();
       WRK->ORG: \s+ > \s+ Line \s+ >>mod \s+ zzz<< \s+ ctr=0020 \s+
     }xms;
 
-    is($rc, 0,             'status-prj1: rc is zero');
-    is($stderr, '',        'status-prj1: stderr is empty');
-    like($stdout, $hunk01, 'status-prj1: stdout find hunk01');
-    like($stdout, $hunk02, 'status-prj1: stdout find hunk02');
-    like($stdout, $hunk03, 'status-prj1: stdout find hunk03');
-    like($stdout, $hunk04, 'status-prj1: stdout find hunk04');
-    like($stdout, $hunk05, 'status-prj1: stdout find hunk05');
-    like($stdout, $hunk06, 'status-prj1: stdout find hunk06');
-    like($stdout, $hunk07, 'status-prj1: stdout find hunk07');
-    like($stdout, $hunk08, 'status-prj1: stdout find hunk08');
+    is($rc, 0,             'status-prj1a: rc is zero');
+    is($stderr, '',        'status-prj1a: stderr is empty');
+    like($stdout, $hunk01, 'status-prj1a: stdout find hunk01');
+    like($stdout, $hunk02, 'status-prj1a: stdout find hunk02');
+    like($stdout, $hunk03, 'status-prj1a: stdout find hunk03');
+    like($stdout, $hunk04, 'status-prj1a: stdout find hunk04');
+    like($stdout, $hunk05, 'status-prj1a: stdout find hunk05');
+    like($stdout, $hunk06, 'status-prj1a: stdout find hunk06');
+    like($stdout, $hunk07, 'status-prj1a: stdout find hunk07');
+    like($stdout, $hunk08, 'status-prj1a: stdout find hunk08');
+}
+
+# verify output of vc_status -c
+# *****************************
+{
+    my ($stdout, $stderr, $rc) = my_system($^X, File::Spec->catdir($mpath, 'vc_status.pl'), '-a', '-o', '-e', '-c');
+
+    my $hunk01 = qr{
+      ARC->WRK: \s+ 17c16 \s+
+      ARC->WRK: \s+ -+ \s+
+      ARC->WRK: \s+ < \s+ Line`>> [tes ]*     <<`ctr=0017 ~\\ \s+
+      ARC->WRK: \s+ [* ]* \s+
+      ARC->WRK: \s+ > \s+ Line`>> mod`tuesday <<`ctr=0017 ~\\ \s+
+      ARC->WRK: \s+ -+ \s+
+    }xms;
+
+    my $h_arcwrk = () = $stdout =~ m{(^ ARC->WRK: \s \d)}xmsg;
+    my $h_wrkorg = () = $stdout =~ m{(^ WRK->ORG: \s \d)}xmsg;
+
+    is($rc, 0,             'status-prj1b: rc is zero');
+    is($stderr, '',        'status-prj1b: stderr is empty');
+    like($stdout, $hunk01, 'status-prj1b: stdout find hunk01');
+    is($h_arcwrk, 7,       'status-prj1b: number of hunks ARC->WRK');
+    is($h_wrkorg, 1,       'status-prj1b: number of hunks WRK->ORG');
 }
 
 # Checking changes in Prj_02:
@@ -665,9 +714,9 @@ preparations();
     my $verif01 = qr{There \s+ are \s+ 2 \s+ hunks}xms;
 
     my $verif02 = qr{
-      s \s+  3 \s+ => \s+ the`years`’82`and`’90,`I`am`faced`by \s+
+      s \s+  3 \s+ => \s+ the`years`’82`and`’90,`I`am`faced`by ~\\ \s+
       - \s+ -- \s+ => \s+
-      d \s+  2 \s+ => \s+ the`years`’82`and`’90,`I`am`faced`by \s+
+      d \s+  2 \s+ => \s+ the`years`’82`and`’90,`I`am`faced`by ~\\ \s+
     }xms;
 
     is($rc, 0,              'vc_merge_01: rc is zero');
@@ -701,10 +750,11 @@ preparations();
       '--diff='   . $dif_file,
     );
 
+    # gained`publicity~\`~\     through~\`~\    the~\`~\   papers,~\`~\
     my $verif01 = qr{
-      s \s+ 8 \s+ => \s+ gained`publicity` \s+   through` \s+  the` \s+ papers,` \s+  and \s+
+      s \s+ 8 \s+ => \s+ gained`publicity` \s+   through` \s+  the` \s+ papers,` \s+  and ~\\ \s+
           \*+ \s+ => \s+ \*+ \s+ \*+ \s+ \*+ \s+ \*+ \s+
-      d \s+ 7 \s+ => \s+ gained`publicity~\[126\]through~\[96\]the~\[9\]papers,~\[23\]and \s+
+      d \s+ 7 \s+ => \s+ gained`publicity~\[126\]through~\[96\]the~\[9\]papers,~\[23\]and ~\\ \s+
     }xms;
 
     is($rc, 0,              'vc_merge_03: rc is zero');
@@ -719,25 +769,25 @@ preparations();
     my ($stdout, $stderr, $rc) = my_system($^X, File::Spec->catdir($mpath, 'vc_merge.pl'),
       '--input='  . $inp_file,
       '--diff='   . $dif_file,
-      '--linewd=' . '39',
+      '--linewd=' . '41',
     );
 
     my $verif01 = qr{
-      s \s+  5 \s+ => \s+ interesting`features`that`it`is`no`easy    \s+
+      s \s+  5 \s+ => \s+ interesting`features`that`it`is`no`easy  ~ \\ \s+
       - \s+ -- \s+ => \s+
-      d \s+  4 \s+ => \s+ interesting`features`that`it`is`no`easy    \s+
+      d \s+  4 \s+ => \s+ interesting`features`that`it`is`no`easy  ~ \\ \s+
 
-      s \s+  6 \s+ => \s+ matter`to`know`which`to`choose`and`whic    \s+
+      s \s+  6 \s+ => \s+ matter`to`know`which`to`choose`and`which ~    \s+
       - \s+ -- \s+ => \s+
-      d \s+  5 \s+ => \s+ matter`to`know`which`to`choose`and`whic    \s+
+      d \s+  5 \s+ => \s+ matter`to`know`which`to`choose`and`which ~    \s+
 
-                          h \s+
+                          \\ \s+
 
-                          h \s+
+                          \\ \s+
 
-      s \s+ 7 \s+ => \s+ to`leave\.`Some,`however,`                  \s+
+      s \s+ 7 \s+ => \s+ to`leave\.`Some,`however,`                    \s+
           \*+ \s+ => \s+ \*+ \s+
-      d \s+ 6 \s+ => \s+ to`leave\.`Some,`however,`\.\.\.and`here`co \s+
+      d \s+ 6 \s+ => \s+ to`leave\.`Some,`however,`\.\.\.and`here`come \s+
     }xms;
 
     is($rc, 0,              'vc_merge_04: rc is zero');

@@ -1,6 +1,6 @@
 =head1 NAME
 
-File::Vctools_fr - Outils de Controle de Versions simple avec diff.
+File::Vctools_fr - Comparer differentes versions de fichiers texte et identifier les modifications effectuees
 
 =head1 TRADUCTION
 
@@ -10,7 +10,1344 @@ get the Perl source code of the module, please see File/Vctools.pm
 Ce document est une traduction FranE<ccedil>aise de l'Anglais du module File::Vctools. Pour
 obtenir la source Perl du module, consultez le fichier File/Vctools.pm
 
-La traduction FranE<ccedil>aise va apparaitre bientE<ocirc>t...
+=head1 SYNOPSIS
+
+File::Vctools est un ensemble de programmes utiles pour vous aider E<agrave> organiser vos projets.
+Actuellement, File::Vctools est disponible uniquement pour Windows et pour Linux, mais
+si quelqu'un veut l'utiliser pour un autre systE<egrave>me, la conversion devrait E<ecirc>tre facile.
+Si vous avez dE<eacute>jE<agrave> converti File::Vctools pour un autre systE<egrave>me, merci de me contacter E<agrave> l'adresse
+<klaus03@gmail.com>, japprE<eacute>cie vos commentaires.
+
+Voici un premier programme qui lance les composants de File::Vctools:
+
+  use strict;
+  use warnings;
+  use 5.010;
+
+  use File::Vctools qw(get_mpath get_difftool);
+  use File::Spec;
+  use File::Slurp;
+  use File::Temp qw(tempdir);
+
+  my $difftool = get_difftool();
+  my $mpath    = get_mpath();
+  my $cwd      = File::Spec->rel2abs('.'); END { chdir $cwd if defined $cwd; }
+  my $tempdir  = tempdir(CLEANUP => 1);
+
+  say "difftool is $difftool";
+  say "mpath    is $mpath";
+  say "cwd      is $cwd";
+  say "tempdir  is $tempdir";
+  say '';
+
+  mkdir File::Spec->catdir($tempdir, 'XmlRepo');
+  mkdir File::Spec->catdir($tempdir, 'test_arch');
+  mkdir File::Spec->catdir($tempdir, 'Original');
+  mkdir File::Spec->catdir($tempdir, 'P001');
+
+  $ENV{VCTOOLDIR} = File::Spec->catdir($tempdir, 'XmlRepo');
+
+  write_file(File::Spec->catdir($tempdir, 'XmlRepo', 'vc_parameter.xml'),
+    qq{<?xml version="1.0" encoding="iso-8859-1"?>\n},
+    qq{<vc>\n},
+    qq{  <archive path="}, File::Spec->catdir($tempdir, 'test_arch'), qq{" />\n},
+    qq{</vc>\n},
+  );
+
+  write_file(File::Spec->catfile($tempdir, 'Original', 'file.txt'),
+    qq{Line001\n},
+    qq{Line002\n},
+    qq{Line003\n},
+    qq{Line004\n},
+  );
+
+  chdir File::Spec->catdir($tempdir, 'P001') or die "Error-0010: chdir $!";
+
+  system $^X, File::Spec->catfile($mpath, 'vc_init.pl');
+  system $^X, File::Spec->catfile($mpath, 'vc_checkout.pl'), File::Spec->catfile($tempdir, 'Original', 'file.txt');
+
+  write_file(File::Spec->catfile('Work', 'F_file_Z001.txt'),
+    qq{Line001\n},
+    qq{Line002 ***\n},
+    qq{Line003\n},
+    qq{Line004\n},
+  );
+
+  system $^X, File::Spec->catfile($mpath, 'vc_apply.pl');
+  system $^X, File::Spec->catfile($mpath, 'vc_status.pl'), '-a', '-o';
+  system $^X, File::Spec->catfile($mpath, 'vc_list.pl');
+  system $^X, File::Spec->catfile($mpath, 'vc_reset.pl');
+
+  chdir 'Data' or die "Error-0020: chdir $!";
+
+  write_file('orig.txt',
+    qq{Orig001\n},
+    qq{Orig002\n},
+    qq{Orig003\n},
+    qq{Orig004\n},
+    qq{Orig005\n},
+  );
+
+  write_file('patch.txt',
+    qq{\@\@ -2,4 +2,4 \@\@\n},
+    qq{ Orig002\n},
+    qq{-Orig003\n},
+    qq{+Orig003***\n},
+    qq{ Orig004\n},
+  );
+
+  system $^X, File::Spec->catfile($mpath, 'vc_merge.pl'),
+    '--input=orig.txt', '--diff=patch.txt', '--output=out.txt';
+
+et voici le rE<eacute>sultat (sous Windows):
+
+  # difftool is C:\Perl\lib\Algorithm\diffnew.pl
+  # mpath    is C:\Perl\site\bin
+  # cwd      is C:\Users\user1\Documents\Sandbox
+  # tempdir  is C:\Users\user1\AppData\Local\Temp\6ALx6IvP22
+  #
+  # ****************************
+  # **  Initialising Project  **
+  # ****************************
+  #
+  # Project P001            ==> ~\AppData\Local\Temp\6ALx6IvP22
+  #
+  # Item [dir]  ==> Work                      : *** Write ***
+  # Item [dir]  ==> Data                      : *** Write ***
+  # Item [dir]  ==> Cmd                       : *** Write ***
+  # Item [xml]  ==> B_Flist.xml               : *** Write ***
+  # Item [txt]  ==> a_Project.txt             : *** Write ***
+  # Item [pl]   ==> r_apply.pl                : *** Write ***
+  # Item [pl]   ==> r_checkout.pl             : *** Write ***
+  # Item [pl]   ==> r_list_det.pl             : *** Write ***
+  # Item [pl]   ==> r_list_file.pl            : *** Write ***
+  # Item [pl]   ==> r_list_proj.pl            : *** Write ***
+  # Item [pl]   ==> r_renew.pl                : *** Write ***
+  # Item [pl]   ==> r_reset.pl                : *** Write ***
+  # Item [pl]   ==> r_statchar.pl             : *** Write ***
+  # Item [pl]   ==> r_statdiff.pl             : *** Write ***
+  # Item [pl]   ==> r_status.pl               : *** Write ***
+  #
+  # ***************************
+  # ** Checking out programs **
+  # ***************************
+  #
+  # Project P001            ==> ~\AppData\Local\Temp\6ALx6IvP22
+  #
+  # Ckout [  1/  1] ** Write ** F_file_Z001.txt                << ~\AppData\Local\Temp\6ALx6IvP22\Data\file.txt
+  #
+  # Apply [  1/  1] F_file_Z001.txt                                       WRK --I=0001/D=0001--> ORG
+  # *******************
+  # ** Status Report **
+  # *******************
+  #
+  # Project P001            ==> ~\AppData\Local\Temp\6ALx6IvP22
+  #
+  # [  1/  1] F_file_Z001.txt                ARC --I=0001/D=0001--> WRK -----------------> ORG
+  # 2c2
+  # < Line002
+  # ---
+  # > Line002 ***
+  #
+  # *******************
+  # ** List Projects **
+  # *******************
+  #
+  # Reading ~\AppData\Local\Temp\6ALx6IvP22\test_arch\D_Coutlist.dat
+  #
+  # Project P001            ==> ~\AppData\Local\Temp\6ALx6IvP22
+  #
+  #    1. [CO=  1] P001            ~\AppData\Local\Temp\6ALx6IvP22\Data\file.txt
+  #
+  # Reset [  1/  1] rewrite ==> ~\AppData\Local\Temp\6ALx6IvP22\Data\file.txt
+  # *******************************
+  # ** Merging diffs into a file **
+  # *******************************
+  #
+  # input file  = 'orig.txt'
+  # diff        = 'patch.txt'
+  # output file = 'out.txt'
+  #
+  # There are 1 hunks:
+  #   1. @@ -00002,00004 +00002,00004 @@ --> Orig002 Orig003 Orig004
+  #
+  # Output successfully written to 'out.txt'
+
+=head1 PREPARATION
+
+=head2 Archive
+
+L'archive est l'endroit oE<ugrave> les sauvegardes sont installE<eacute>es. Le directory est initialement
+vide, mais E<agrave> chaque fois un "checkout" est fait, une sauvegarde sera rajoutE<eacute>e au directory.
+L'archive peut E<ecirc>tre n'importe quel directory, mais bien sE<ucirc>r, il faut avoir les droits
+nE<eacute>cessaires pour E<eacute>crire dans ce directory.
+
+=head2 ME<eacute>thode Diff
+
+Par dE<eacute>faut, le programme ('diffnew.pl') dans l'espace de nom Algorithm::Diff sera
+appelE<eacute> quand la diffE<eacute>rence entre deux fichiers texte doit E<ecirc>tre dE<eacute>terminE<eacute>. Ce programme
+fonctionne correctement, mais il est assez lent.
+
+Il est prE<eacute>fE<eacute>rable d'utiliser la commande interne "diff", qui est beaucoup plus rapide.
+Il y a une commande "diff" dE<eacute>jE<agrave> intE<eacute>grE<eacute> dans Linux.
+
+Sous Windows, par contre, il n'ya pas de commande "diff" intE<eacute>grE<eacute>e. Il est recommandE<eacute> de
+tE<eacute>lE<eacute>charger et installer le package GNU de "diff":
+
+=over
+
+=item Step 1
+
+Allez sur http://gnuwin32.sourceforge.net/packages/diffutils.htm
+
+=item Step 2
+
+TE<eacute>lE<eacute>chargez et dezippez les deux archives: diffutils-bin.zip et diffutils-dep.zip
+
+=item Step 3
+
+L'archive 'diffutils-bin.zip' contient 4 fichiers (*.exe) dans le sous-directory bin/:
+'cmp.exe', 'diff.exe', 'diff3.exe' et 'sdiff.exe'.
+
+=item Step 4
+
+L'archive 'diffutils-dep.zip' contient 2 fichiers (*.dll) dans le sous-directory bin/:
+'libiconv2.dll' et 'libintl3.dll'.
+
+=item Step 5
+
+Tous les 6 fichiers (*.exe et *.dll) doivent E<ecirc>tre extrait dans le mE<ecirc>me directory, and le
+directory devrait E<ecirc>tre dans le "path".
+
+=back
+
+=head2 Fichier paramE<egrave>tre
+
+Suite E<agrave> l'installation du package File::Vctools, vous devez prE<eacute>parer (crE<eacute>er) le fichier
+paramE<egrave>tre qui s'appelle 'vc_parameter.xml'. Ce fichier doit E<ecirc>tre positionnE<eacute> dans le
+mE<ecirc>me directory oE<ugrave> les fichiers 'vc_init.pl', 'vc_checkout.pl', 'vc_apply.pl',
+etc... sont dE<eacute>jE<agrave> installE<eacute>s. (E<ccedil>a devrait E<ecirc>tre le directory site/bin/, mais E<ccedil>a peut
+E<eacute>galement E<ecirc>tre un autre directory, au cas oE<ugrave> les fichiers ont E<eacute>tE<eacute> dE<eacute>placE<eacute>s).
+
+Le fichiers paramE<egrave>tre contient deux types d'information: premiE<egrave>re information est l'endroit
+oE<ugrave> se trouve l'archive. Deuxime information (cette deuxiE<egrave>me information est facultative)
+est l'outil de "diff" qui remplace le "diffnew.pl" de Algorithm::Diff.
+
+Voici un exemplaire 'vc_parameter.xml':
+
+  <?xml version="1.0" encoding="iso-8859-1"?>
+  <vc>
+    <archive  path="/home/user1/Programs/vc_archive" />
+    <difftool prog="diff" />
+  </vc>
+
+Bien sE<ucirc>r, nous devons garantir que le directory /home/user1/Programs/vc_archive existe:
+
+  ~> cd /home/user1/Programs
+
+  ~/Programs> mkdir vc_archive
+
+  ~/Programs> ll
+
+  # total 1
+  # drwxr-xr-x  2 user1 user1  4096 2010-04-06 16:37 vc_archive
+
+  ~/Programs>
+
+=head1 COMPOSANTS
+
+Il y a sept composants dans File::Vctools: vc_init.pl, vc_checkout.pl, vc_apply.pl,
+vc_status.pl, vc_reset.pl, vc_list.pl et vc_merge.pl.
+
+=head2 vc_init.pl
+
+vc_init.pl est la premiE<egrave>re commande E<agrave> utiliser dans File::Vctools. Il faut d'abord se positionner (chdir)
+dans un directory vide, ensuite effectuer la commande 'perl .../site/bin/vc_init.pl' (utilisez la commande
+'perl -V:sitebin' pour connaE<icirc>tre le directory exacte de site/bin). vc_init.pl crE<eacute>e d'abord trois
+sous-directories 'Work/', 'Data/' et 'Cmd/', dans le directory 'Cmd/' il y aura 10 programmes "raccourcis"
+("r_*.pl"):
+ 
+  ~> cd /home/user1/Projects
+
+  ~/Projects> mkdir NewProject
+
+  ~/Projects> cd NewProject
+
+  ~/Projects/NewProject> ll
+
+  # total 0
+
+  ~/Projects/NewProject> perl -V:sitebin
+
+  # sitebin='/opt/perl/site/bin';
+
+  ~/Projects/NewProject> perl /opt/perl/site/bin/vc_init.pl 
+
+  # ****************************
+  # **  Initialising Project  **
+  # ****************************
+  #
+  # Project NewProject      ==> ~/Projects
+  #
+  # Item [dir]  ==> Work                      : *** Write ***
+  # Item [dir]  ==> Data                      : *** Write ***
+  # Item [dir]  ==> Cmd                       : *** Write ***
+  # Item [xml]  ==> B_Flist.xml               : *** Write ***
+  # Item [txt]  ==> a_NewProject.txt          : *** Write ***
+  # Item [pl]   ==> r_apply.pl                : *** Write ***
+  # Item [pl]   ==> r_checkout.pl             : *** Write ***
+  # Item [pl]   ==> r_list_det.pl             : *** Write ***
+  # Item [pl]   ==> r_list_file.pl            : *** Write ***
+  # Item [pl]   ==> r_list_proj.pl            : *** Write ***
+  # Item [pl]   ==> r_renew.pl                : *** Write ***
+  # Item [pl]   ==> r_reset.pl                : *** Write ***
+  # Item [pl]   ==> r_statchar.pl             : *** Write ***
+  # Item [pl]   ==> r_statdiff.pl             : *** Write ***
+  # Item [pl]   ==> r_status.pl               : *** Write ***
+
+  ~/Projects/NewProject> ll
+
+  # total 3
+  # drwxr-xr-x 2 user1 user1 4096 2010-04-09 17:21 Cmd
+  # drwxr-xr-x 2 user1 user1 4096 2010-04-09 17:21 Data
+  # drwxr-xr-x 2 user1 user1 4096 2010-04-09 17:21 Work
+
+  ~/Projects/NewProject> ll Cmd/
+
+  # total 11
+  # -rw-r--r-- 1 user1 user1  55 2010-04-09 17:21 a_NewProject.txt
+  # -rw-r--r-- 1 user1 user1 723 2010-04-09 17:21 r_apply.pl
+  # -rw-r--r-- 1 user1 user1 494 2010-04-09 17:21 r_checkout.pl
+  # -rw-r--r-- 1 user1 user1 502 2010-04-09 17:21 r_list_det.pl
+  # -rw-r--r-- 1 user1 user1 502 2010-04-09 17:21 r_list_file.pl
+  # -rw-r--r-- 1 user1 user1 496 2010-04-09 17:21 r_list_proj.pl
+  # -rw-r--r-- 1 user1 user1 797 2010-04-09 17:21 r_renew.pl
+  # -rw-r--r-- 1 user1 user1 560 2010-04-09 17:21 r_reset.pl
+  # -rw-r--r-- 1 user1 user1 518 2010-04-09 17:21 r_statchar.pl
+  # -rw-r--r-- 1 user1 user1 516 2010-04-09 17:21 r_statdiff.pl
+  # -rw-r--r-- 1 user1 user1 510 2010-04-09 17:21 r_status.pl
+
+  ~/Projects/NewProject> ll Work/
+
+  # total 1
+  # -rw-r--r-- 1 user1 user1 120 2010-04-09 17:21 B_Flist.xml
+
+  ~/Projects/NewProject> ll Data/
+
+  # total 0
+
+  ~/Projects/NewProject>
+
+=head2 vc_checkout.pl
+
+Supposons que vous avez un fichier /home/user1/Documents/Book/shakespeare.txt avec du texte en format
+Ascii:
+
+  ~/Projects/NewProject> cat /home/user1/Documents/Book/shakespeare.txt
+
+  # Orlando: Je me rappelle bien, Adam; tel a ete mon legs, une miserable somme de mille
+  # ecus dans son testament; et, comme tu dis, il a charge mon frere, sous peine de sa
+  # malediction, de me bien elever, et voila la cause de mes chagrins. Il entretient mon
+  # frere Jacques a l'ecole, et la renommee parle magnifiquement de ses progres. Pour
+  # moi, il m'entretient au logis en paysan, ou pour mieux dire, il me garde ici sans
+  # aucun entretien; car peut-on appeler entretien pour un gentilhomme de ma naissance,
+  # un traitement qui ne differe en aucune facon de celui des boeufs a l'etable? Ses
+  # chevaux sont mieux traites; car, outre qu'ils sont tres-bien nourris, on les dresse
+  # au manege; et a cette fin on paye bien cher des ecuyers [...]
+  # ==
+  # William Shakespeare,
+  # Comme il vous plaira
+
+Vous pouvez effectuer une commande "checkout" (dans le directory ~/Projects/NewProject) comme suite:
+
+  ~/Projects/NewProject> perl /opt/perl/site/bin/vc_checkout.pl /home/user1/Documents/Book/shakespeare.txt
+
+  # ***************************
+  # ** Checking out programs **
+  # ***************************
+  #
+  # Project NewProject       ==> ~/Projects
+  #
+  # Ckout [  1/  1] ** Write ** F_shakespeare_Z001.txt         << ~/Documents/Book/shakespeare.txt
+
+Un nouveau fichier ('F_shakespeare_Z001.txt') sera automatiquement crE<eacute>E<eacute> dans le sous-directory Work/ (ne vous inquiE<eacute>tez
+pas sur le fichier 'B_Flist.xml', on va discuter sur ce fichier plus tard)
+
+  ~/Projects/NewProject> cd Work
+
+  ~/Projects/NewProject/Work> ll
+
+  # total 2
+  # -rw-r--r-- 1 user1 user1 120 2010-04-09 17:21 B_Flist.xml
+  # -rw-r--r-- 1 user1 user1 538 2010-04-09 17:31 F_shakespeare_Z001.txt
+
+  ~/Projects/NewProject/Work> 
+
+=head2 vc_apply.pl
+
+Pour effectuer des modifications, vous restez dans le directory ~/Projects/NewProject/Work/ et vous
+utilisez votre editeur de texte ASCII prefE<eacute>rE<eacute> (vi, emacs, notepad, UltraEdit, SciTE, ...).
+Disons que vous modifiez les mots '...logis en paysan...' en '...logis E<agrave> Londres...', ensuite
+vous enregistrez vos modifications:
+
+  ~/Projects/NewProject/Work> grep "logis" F_shakespeare_Z001.txt
+
+  # moi, il m'entretient au logis en paysan, ou pour mieux dire, il me garde ici sans
+
+  ~/Projects/NewProject/Work> scite F_shakespeare_Z001.txt
+
+  ~/Projects/NewProject/Work> grep "logis" F_shakespeare_Z001.txt
+
+  # moi, il m'entretient au logis a Londres, ou pour mieux dire, il me garde ici sans
+
+On monte un directory au dessus (revenir E<agrave> ~/Projects/NewProject/ et on effectue la commande
+'apply' comme suite:
+
+  ~/Projects/NewProject/Work> cd ..
+
+  ~/Projects/NewProject> perl /opt/perl/site/bin/vc_apply.pl
+
+  # Apply [  1/  1] F_shakespeare_Z001.txt                                WRK --I=0001/D=0001--> ORG
+
+  ~/Projects/NewProject>
+
+Afin de confirmer que les modifications ('...logis E<agrave> Londres...') ont bien E<eacute>tE<eacute> tranfE<eacute>rE<eacute>es dans
+le fichier 'shakespeare.txt', on va effectuer la commande suivante:
+
+  ~/Projects/NewProject> grep "logis" /home/user1/Documents/Book/shakespeare.txt
+
+  # moi, il m'entretient au logis a Londres, ou pour mieux dire, il me garde ici sans
+
+  ~/Projects/NewProject> 
+
+=head2 vc_status.pl
+
+Pour avoir un compte-rendu des modifications, il suffit d'effectuer la commande vc_status.pl
+avec les options -a -o -e:
+
+  ~/Projects/NewProject> perl /opt/perl/site/bin/vc_status.pl -a -o -e
+
+  # *******************
+  # ** Status Report **
+  # *******************
+  #
+  # Project NewProject      ==>  ~/Projects
+  #
+  # ===============================================================================================
+  # [  1/  1] F_shakespeare_Z001.txt         ARC --I=0001/D=0001--> WRK -----------------> ORG
+  # ===============================================================================================
+  # ARC: 06/04/2010 16:37:51 ~/Programs/vc_archive/F_=home=user1=Documents=Book=shakespeare.txt
+  # WRK: 09/04/2010 17:35:59 ~/Projects/NewProject/Work/F_shakespeare_Z001.txt
+  # ORG: 09/04/2010 17:36:06 ~/Documents/Book/shakespeare.txt
+  #
+  # ARC->WRK: 5c5
+  # ARC->WRK: < moi, il m'entretient au logis en paysan, ou pour mieux dire, il me garde ici sans
+  # ARC->WRK: ---
+  # ARC->WRK: > moi, il m'entretient au logis a Londres, ou pour mieux dire, il me garde ici sans
+
+  ~/Projects/NewProject>
+
+Si vous prE<eacute>fE<eacute>rez un autre format, vous pouvez remplacer l'option '-e' par '-u':
+
+  ~/Projects/NewProject> perl /opt/perl/site/bin/vc_status.pl -a -o -u
+
+  # *******************
+  # ** Status Report **
+  # *******************
+  #
+  # Project NewProject      ==> ~/Projects
+  #
+  # [  1/  1] F_shakespeare_Z001.txt         ARC --I=0001/D=0001--> WRK -----------------> ORG
+  # [-] ARC/shakespeare.txt
+  # [+] WRK/shakespeare.txt
+  # @@ -2,7 +2,7 @@
+  #  ecus dans son testament; et, comme tu dis, il a charge mon frere, sous peine de sa
+  #  malediction, de me bien elever, et voila la cause de mes chagrins. Il entretient mon
+  #  frere Jacques a l'ecole, et la renommee parle magnifiquement de ses progres. Pour
+  # -moi, il m'entretient au logis en paysan, ou pour mieux dire, il me garde ici sans
+  # +moi, il m'entretient au logis a Londres, ou pour mieux dire, il me garde ici sans
+  #  aucun entretien; car peut-on appeler entretien pour un gentilhomme de ma naissance,
+  #  un traitement qui ne differe en aucune facon de celui des boeufs a l'etable? Ses
+  #  chevaux sont mieux traites; car, outre qu'ils sont tres-bien nourris, on les dresse
+
+  ~/Projects/NewProject>
+
+=head2 vc_reset.pl
+
+Vous pouvez dE<eacute>cider de revenir au texte original dans le fichier /home/user1/Documents/Book/shakespeare.txt,
+et, en mE<ecirc>me temps, garder les modifications dans /home/user1/Projects/NewProject/Work/F_shakespeare_Z001.txt
+(au cas oE<ugrave> vous souhaiteriez reprendre les modifications plus tard). La commande est la suivante:
+
+  ~/Projects/NewProject> perl /opt/perl/site/bin/vc_reset.pl
+
+  # Reset [  1/  1] rewrite ==> ~/Documents/Book/shakespeare.txt
+
+  ~/Projects/NewProject>
+
+Pour vE<eacute>rifier que les modifications ('...logis E<agrave> Londres...') ont E<eacute>tE<eacute> annulE<eacute> dans le fichier
+'shakespeare.txt' -- ce fichier devrait avoir le texte original '...logis en paysan...', voici
+la commande:
+
+  ~/Projects/NewProject> grep "logis" /home/user1/Documents/Book/shakespeare.txt
+
+  # moi, il m'entretient au logis en paysan, ou pour mieux dire, il me garde ici sans
+
+  ~/Projects/NewProject>
+
+Au cas vous souhaiteriez re-activer les modifications, une simple commande 'perl
+/opt/perl/site/bin/vc_apply.pl' suffit.
+
+=head2 vc_list.pl
+
+Maintenant on sort du directory '~/Projects/NewProject/' et on vient sur le directory d'accueil:
+
+  ~/Projects/NewProject> cd ~
+
+  ~>
+
+Pour obtenir la liste de tous les fichiers dans l'archive, il suffit d'effectuer la commande
+'vc_list.pl':
+
+  ~> perl /opt/perl/site/bin/vc_list.pl
+
+  # *******************
+  # ** List Projects **
+  # *******************
+  #
+  # Reading ~/Programs/vc_archive/D_Coutlist.dat
+  #
+  # Project * Reset *
+  #
+  #    1. [CO=  1]                 ~/Documents/Book/shakespeare.txt
+
+  ~>
+
+Pour avoir les dE<eacute>tails sur les fichiers qui appartiennent aux projets, nous rajoutons l'option '-d':
+
+  ~> perl /opt/perl/site/bin/vc_list.pl -d
+
+  # ******************
+  # ** List Details **
+  # ******************
+  #
+  # Reading ~/Programs/vc_archive/D_Coutlist.dat
+  #
+  # Project * Reset *
+  #
+  #    1. [CO=  1]                 ~/Documents/Book/shakespeare.txt
+  #     +  NewProject      ----> F_shakespeare_Z001.txt         09-Apr-2010 17:31:30 ~/Projects
+
+  ~>
+
+Le symbole '+' (devant le projet 'NewProject') indique que le fichier a E<eacute>tE<eacute> modifiE<eacute>, mais la
+commande 'vc_apply.pl' pour le transfert vers ~/Documents/Book/shakespeare.txt n'a pas E<eacute>tE<eacute> effectuE<eacute>e.
+(c'est parce que nous avons effectuE<eacute> la commande 'vc_reset.pl').
+
+Allons-y, tranferons-nous les modifications dans 'NewProject':
+
+  ~> cd ~/Projects/NewProject/
+  
+  ~/Projects/NewProject> perl /opt/perl/site/bin/vc_apply.pl
+
+  # Apply [  1/  1] F_shakespeare_Z001.txt                                WRK --I=0001/D=0001--> ORG
+
+  ~/Projects/NewProject> cd ~
+
+  ~>
+
+Quand on effectue la commande 'vc_list.pl -d', on voit bien que le symbole '=>' a remplacE<eacute> le symbole
+'+' comme indicateur du projet 'NewProject':
+
+  ~> perl /opt/perl/site/bin/vc_list.pl -d
+
+  # ******************
+  # ** List Details **
+  # ******************
+  #
+  # Reading ~/Programs/vc_archive/D_Coutlist.dat
+  #
+  # Project NewProject      ==> ~/Projects
+  #
+  #    1. [CO=  1] NewProject      ~/Documents/Book/shakespeare.txt
+  #     => NewProject      ----> F_shakespeare_Z001.txt         09-Apr-2010 17:31:30 ~/Projects
+
+  ~>
+
+=head2 vc_merge.pl
+
+Le programme vc_merge.pl permet de lire un fichier "patch" d'un autre projet et l'appliquer E<agrave>
+votre propre projet. Supposons qu'une autre personne avait travaillE<eacute> independent et en secret
+sur le mE<ecirc>me fichier ('shakespeare.txt'), mais sur un autre projet, et maintenant cette personne
+vous donne son fichier "patch" (ce fichier "patch" devrait E<ecirc>tre au format 'diff -u') avec les
+modifications qu'elle a faites et elle vous demande d'incorporer ("merge") ses modifications
+ensemble avec vos modifications dans le mE<ecirc>me fichier. Voici la procE<eacute>dure:
+
+Le texte suivant est le contenu d'un patch qui vous a E<eacute>tE<eacute> envoyez par une autre personne. En
+effet, c'est la modification des mots '...parle magnifiquement...' en '...parle bien...':
+
+  ~/Projects/NewProject> cat patch.txt
+
+  # --- a/shakespeare.txt  2010-04-06 14:25:07.000000000 +0200
+  # +++ b/shakespeare.txt  2010-04-06 14:27:51.000000000 +0200
+  # @@ -4,6 +4,6 @@
+  #  malediction, de me bien elever, et voila la cause de mes chagrins. Il entretient mon
+  # -frere Jacques a l'ecole, et la renommee parle magnifiquement de ses progres. Pour
+  # +frere Jacques a l'ecole, et la renommee parle bien de ses progres. Pour
+  #  moi, il m'entretient au logis en paysan, ou pour mieux dire, il me garde ici sans
+
+  ~/Projects/NewProject>
+
+Pour incorporer les modifications de l'autre personne avec vos propres modifications, les commandes
+suivantes doivent E<ecirc>tre effectuE<eacute>es:
+
+  ~/Projects/NewProject> perl /opt/perl/site/bin/vc_merge.pl
+     --input=Work/F_shakespeare_Z001.txt --diff=patch.txt --output=out.txt
+
+  # *******************************
+  # ** Merging diffs into a file **
+  # *******************************
+  #
+  # input file  = 'Work/F_shakespeare_Z001.txt'
+  # diff        = 'patch.txt'
+  # output file = 'out.txt'
+  #
+  # There are 1 hunks:
+  #   1. @@ -00004,00006 +00004,00006 @@ --> malediction, de me bien e..., il me garde ici sans
+  # 
+  # Error-0040: Conflict in hunk 1 (@@ -4,6 +4,6 @@): 0 matches at /opt/perl/site/bin/vc_merge.pl line 131.
+
+  ~/Projects/NewProject>
+
+Nous constatons qu'il y a un conflit entre les modifications de l'autre personne et vos propres
+modifications. Pour resoudre le conflit, nous devons rechercher les dE<eacute>tails du conflit. Nous effectuons
+la commande 'vc_merge.pl', mais nous remplaE<ccedil>ons le paramE<egrave>tre '--output=out.txt' par '--linewd=87'. Ainsi
+on obtient un rapport dE<eacute>taillE<eacute> (alignement):
+
+  ~/Projects/NewProject> perl /opt/perl/site/bin/vc_merge.pl
+     --input=Work/F_shakespeare_Z001.txt --diff=patch.txt --linewd=87
+
+  # *******************************
+  # ** Merging diffs into a file **
+  # *******************************
+  #
+  # input file  = 'Work/F_shakespeare_Z001.txt'
+  # diff        = 'patch.txt'
+  # linewd      = 87
+  #
+  # There are 1 hunks:
+  #
+  # ========================================
+  # ==>   1. @@ -00004,00006 +00004,00006 @@
+  # ========================================
+  #
+  #    s    4 => frere`Jacques`a`l'e  c  ole,` et`la`r enomme e`parl e `magnifiq     u ement`de`ses`prog
+  #    ****** => ******* ******** * ** ** **  * * ** **  *** * *** ** * **** ******** * ****    *   ***
+  #    d    1 => m      a        l ediction ,`de `me`bien`  eleve r,`et`vo  ila`la`cause    `de`mes`chag
+  #
+  #              re s.`Pou   r~\
+  #               **   ****** ************
+  #              rins.`Il`entretient`mon~\
+  #
+  #    s    5 => moi,`il`m'entr  etient` a  u`logis`a`L   ondres,`ou`pour`    mi eux`dir e,`    il`   me
+  #    ****** => ************* ** ***** * ** *****    **** *** *  ** **** **** ** ** ** * * **** *****
+  #    d    2 => f            rere     `Jacque    s`a`l'ecol  e ,`et`la  `renommee  `parle `magnifiqueme
+  #
+  #                `garde`ici`sans~\
+  #              ** ***   **** ** ****************
+  #              nt`   de`    se s`progres.`Pour~\
+  #
+  #    s    6 => aucun`     entretien;`car`peut-on`appeler  `entretien `   pour`   un`g  entilhomme`   d
+  #    ****** => ***** *****         * * **** **** **** ****   ****** * ***     *** * *** **  ** *  ***
+  #    d    3 => moi, `il`m'entretient` a    u    `    logis`en`paysan,`ou`pour`mieux`dire,`il` m e`gard
+  #
+  #              e`ma`nai   ssance,~\
+  #                ***** *** *  *****
+  #              e`     ici`s ans~\
+
+  ~/Projects/NewProject>
+
+
+Malheureusement, ce rapport n'est pas lisible. En fait, il semble que l'alignement n'est pas correcte.
+Si on regarde un peu plus prE<egrave>s, on constate que l'instruction "@@ -00004,00006 +00004,00006 @@" dans le
+fichier "patch" semble E<ecirc>tre faux. Si l'instruction E<eacute>tait "@@ -00003,00005 +00003,00005 @@", le rapport
+serait beaucoup mieux alignE<eacute>.
+
+Alors, on dE<eacute>cide de manipuler le fichier 'patch.txt' et remplacer "@@ -4,6 +4,6 @@" by "@@ -3,5 +3,5 @@":
+
+  ~/Projects/NewProject> scite patch.txt
+
+  ~/Projects/NewProject> cat patch.txt
+  
+  # --- a/shakespeare.txt  2010-04-06 14:25:07.000000000 +0200
+  # +++ b/shakespeare.txt  2010-04-06 14:27:51.000000000 +0200
+  # @@ -3,5 +3,5 @@
+  #  malediction, de me bien elever, et voila la cause de mes chagrins. Il entretient mon
+  # -frere Jacques a l'ecole, et la renommee parle magnifiquement de ses progres. Pour
+  # +frere Jacques a l'ecole, et la renommee parle bien de ses progres. Pour
+  #  moi, il m'entretient au logis en paysan, ou pour mieux dire, il me garde ici sans
+
+  ~/Projects/NewProject>
+
+
+Maintenant on relance la mE<ecirc>me commande 'vc_merge.pl ... --linewd=87', voici le rE<eacute>sultat:
+
+  ~/Projects/NewProject> perl /opt/perl/site/bin/vc_merge.pl
+     --input=Work/F_shakespeare_Z001.txt --diff=patch.txt --linewd=87
+
+  # *******************************
+  # ** Merging diffs into a file **
+  # *******************************
+  #
+  # input file  = 'Work/F_shakespeare_Z001.txt'
+  # diff        = 'patch.txt'
+  # linewd      = 87
+  #
+  # There are 1 hunks:
+  #
+  # ========================================
+  # ==>   1. @@ -00003,00005 +00003,00005 @@
+  # ========================================
+  #
+  #    s    3 => malediction,`de`me`bien`elever,`et`voila`la`cause`de`mes`chagrins.`Il`entretient`mon~\
+  #    -   -- =>
+  #    d    1 => malediction,`de`me`bien`elever,`et`voila`la`cause`de`mes`chagrins.`Il`entretient`mon~\
+  #
+  #    s    4 => frere`Jacques`a`l'ecole,`et`la`renommee`parle`magnifiquement`de`ses`progres.`Pour~\
+  #    -   -- =>
+  #    d    2 => frere`Jacques`a`l'ecole,`et`la`renommee`parle`magnifiquement`de`ses`progres.`Pour~\
+  #
+  #    s    5 => moi,`il`m'entretient`au`logis`a`Londre     s  ,`ou`pour`mieux`dire,`il`me`garde`ici`san
+  #    ****** =>                               ******* ***** **
+  #    d    3 => moi,`il`m'entretient`au`logis`       en`paysan,`ou`pour`mieux`dire,`il`me`garde`ici`san
+  #
+  #              s~\
+  #
+  #              s~\
+
+  ~/Projects/NewProject>
+
+Ce rapport est maintenant beaucoup plus lisible. Nous voyons clairement que le conflit
+est en fait le mot '...en paysan...' qui a E<eacute>tE<eacute> modifiE<eacute> en '...E<agrave> Londres...'.
+
+Pour resoudre le conflit, nous dE<eacute>cidons d'intervenir manuellement dans le fichier 'patch.txt' et
+remplacer les mots '...en paysan...' par '...E<agrave> Londres...'.:
+
+  ~/Projects/NewProject> scite patch.txt
+
+  ~/Projects/NewProject> cat patch.txt
+
+  # --- a/shakespeare.txt  2010-04-06 14:25:07.000000000 +0200
+  # +++ b/shakespeare.txt  2010-04-06 14:27:51.000000000 +0200
+  # @@ -3,5 +3,5 @@
+  #  malediction, de me bien elever, et voila la cause de mes chagrins. Il entretient mon
+  # -frere Jacques a l'ecole, et la renommee parle magnifiquement de ses progres. Pour
+  # +frere Jacques a l'ecole, et la renommee parle bien de ses progres. Pour
+  #  moi, il m'entretient au logis a Londres, ou pour mieux dire, il me garde ici sans
+
+  ~/Projects/NewProject>
+
+Nous revenons E<agrave> notre commande initiale: 'vc_merge.pl ... --output=out.txt', qui rE<eacute>ussit maintenant:
+
+  ~/Projects/NewProject> perl /opt/perl/site/bin/vc_merge.pl
+     --input=Work/F_shakespeare_Z001.txt --diff=patch.txt --output=out.txt
+
+  # *******************************
+  # ** Merging diffs into a file **
+  # *******************************
+  #
+  # input file  = 'Work/F_shakespeare_Z001.txt'
+  # diff        = 'patch.txt'
+  # output file = 'out.txt'
+  #
+  # There are 1 hunks:
+  #   1. @@ -00003,00005 +00003,00005 @@ --> malediction, de me bien e..., il me garde ici sans
+  #
+  # Output successfully written to 'out.txt'
+
+  ~/Projects/NewProject>
+
+Nous confirmons que les deux modifications (la premiE<egrave>re modification E<eacute>tait '...parle magnifiquement...'
+en '...parle bien...', la deuxiE<egrave>me modification E<eacute>tait '...logis en paysan...' en '...logis E<agrave> Londres...')
+sont bien dans le fichier 'out.txt':
+
+  ~/Projects/NewProject> cat out.txt
+  
+  # Orlando: Je me rappelle bien, Adam; tel a ete mon legs, une miserable somme de mille
+  # ecus dans son testament; et, comme tu dis, il a charge mon frere, sous peine de sa
+  # malediction, de me bien elever, et voila la cause de mes chagrins. Il entretient mon
+  # frere Jacques a l'ecole, et la renommee parle bien de ses progres. Pour
+  # moi, il m'entretient au logis a Londres, ou pour mieux dire, il me garde ici sans
+  # aucun entretien; car peut-on appeler entretien pour un gentilhomme de ma naissance,
+  # un traitement qui ne differe en aucune facon de celui des boeufs a l'etable? Ses
+  # chevaux sont mieux traites; car, outre qu'ils sont tres-bien nourris, on les dresse
+  # au manege; et a cette fin on paye bien cher des ecuyers [...]
+  # ==
+  # William Shakespeare,
+  # Comme il vous plaira
+
+  ~/Projects/NewProject>
+
+=head1 RACCOURCIS
+
+Quand vous lancez la commande 'vc_init.pl', il y a 10 programmes "raccourcis" qui sont crE<eacute>E<eacute>s
+automatiquement dans le directory 'Cmd/': r_apply.pl, r_checkout.pl, r_list_det.pl, r_list_file.pl,
+r_list_proj.pl, r_renew.pl, r_reset.pl, r_statchar.pl, r_statdiff.pl et r_status.pl.
+
+Mais avant de prE<eacute>senter les dE<eacute>tails du fonctionnement des raccourcis, il faut d'abord
+crE<eacute>er quelques projets supplE<eacute>mentaires pour rendre le fonctionnement plus intE<eacute>ressant. D'abord
+nous vE<eacute>rifions que nous avons plusieurs fichiers dans ~/Documents/Book/
+
+  ~/Projects/NewProject> cd ~
+
+  ~> ll ~/Documents/Book/
+
+  # total 3
+  # -rw-r--r-- 1 user1 user1 559 2010-04-10 13:18 jules_verne.txt
+  # -rw-r--r-- 1 user1 user1 650 2010-04-10 13:24 lewis_carroll.txt
+  # -rw-r--r-- 1 user1 user1 538 2010-04-06 16:37 shakespeare.txt
+
+  ~> cat ~/Documents/Book/jules_verne.txt
+
+  # En l'annee 1872, la maison portant le numero 7 de Saville-row, Burlington Gardens --
+  # maison dans laquelle Sheridan mourut en 1814 --, etait habitee par Phileas Fogg,
+  # esq., l'un des membres les plus singuliers et les plus remarques du Reform-Club de
+  # Londres, bien qu'il semblat prendre a tache de ne rien faire qui put attirer
+  # l'attention. A l'un des plus grands orateurs qui honorent l'Angleterre, succedait
+  # donc ce Phileas Fogg, personnage enigmatique, dont on ne savait rien, sinon que
+  # c'etait un fort galant homme et l'un des plus beaux gentlemen de la haute societe
+  # anglaise. On disait qu'il ressemblait a Byron -- par la tete, car il etait
+  # irreprochable quant aux pieds --, mais un Byron a moustaches et a favoris, un Byron
+  # impassible, qui aurait vecu mille ans sans vieillir. [...]
+  # ==
+  # Jules Verne,
+  # Le tour du monde en quatre-vingts jours
+
+  ~> cat ~/Documents/Book/lewis_carroll.txt
+
+  # Alice commencait a se sentir tres lasse de rester assise a cote de sa soeur, sur le
+  # talus, et de n'avoir rien a faire : une fois ou deux, elle avait jete un coup d'oeil
+  # sur le livre que lisait sa soeur ; mais il ne contenait ni images ni dialogues : "Et,
+  # pensait Alice, a quoi peut bien servir un livre ou il n'y a ni images ni dialogues ?"
+  # Elle se demandait (dans la mesure ou elle etait capable de reflechir, car elle se
+  # sentait tout endormie et toute stupide a cause de la chaleur) si le plaisir de tresser
+  # une guirlande de paquerettes valait la peine de se lever et d'aller cueillir les
+  # paquerettes, lorsque, brusquement, un Lapin Blanc aux yeux roses passa en courant tout
+  # pres d'elle.
+  # ==
+  # Lewis Carroll,
+  # Alice au pays des merveilles
+
+  ~>
+
+En plus du projet existant ('NewProject'), nous souhaitons crE<eacute>er un deuxiE<egrave>me projet nommE<eacute>
+'OtherProject'. On crE<eacute>e d'abord un nouveau sous-directory:
+
+  ~> mkdir ~/Projects/OtherProject
+
+  ~> ll ~/Projects
+
+  # total 2
+  # drwxr-xr-x 2 user1 user1 4096 2010-04-10 13:51 NewProject
+  # drwxr-xr-x 2 user1 user1 4096 2010-04-10 13:50 OtherProject
+
+  ~>
+
+Ensuite on va dans le nouveau sous-directory ("chdir"), on lance 'vc_init.pl' et on revient
+dans le directory d'accueil.
+
+  ~> cd ~/Projects/OtherProject/
+
+  ~/Projects/OtherProject> perl /opt/perl/site/bin/vc_init.pl
+
+  # ****************************
+  # **  Initialising Project  **
+  # ****************************
+  #
+  # Project OtherProject    ==> ~/Projects
+  #
+  # Item [dir]  ==> Work                      : *** Write ***
+  # Item [dir]  ==> Data                      : *** Write ***
+  # Item [dir]  ==> Cmd                       : *** Write ***
+  # Item [xml]  ==> B_Flist.xml               : *** Write ***
+  # Item [txt]  ==> a_OtherProject.txt        : *** Write ***
+  # Item [pl]   ==> r_apply.pl                : *** Write ***
+  # Item [pl]   ==> r_checkout.pl             : *** Write ***
+  # Item [pl]   ==> r_list_det.pl             : *** Write ***
+  # Item [pl]   ==> r_list_file.pl            : *** Write ***
+  # Item [pl]   ==> r_list_proj.pl            : *** Write ***
+  # Item [pl]   ==> r_renew.pl                : *** Write ***
+  # Item [pl]   ==> r_reset.pl                : *** Write ***
+  # Item [pl]   ==> r_statchar.pl             : *** Write ***
+  # Item [pl]   ==> r_statdiff.pl             : *** Write ***
+  # Item [pl]   ==> r_status.pl               : *** Write ***
+
+  ~/Projects/OtherProject> cd ~
+
+  ~>
+
+=head2 r_checkout.pl
+
+Le premier raccouci E<agrave> utiliser est 'r_checkout.pl'. La responsabilitE<eacute> de ce raccourci est d'E<eacute>tablir
+les fichiers qui sont inclut dans le projet. Pour permettre E<agrave> 'r_checkout.pl' de remplir cette
+responsabilitE<eacute>, le fichier XML ('Work/B_Flist.xml') doit E<ecirc>tre mis E<agrave> jour manuellement avec le chemin
+complet des fichiers dans chaque projet. Dans notre cas, nous devons mettre E<agrave> jour deux fichiers XML:
+'~/Projects/NewProject/Work/B_Flist.xml' et '~/Projects/OtherProject/Work/B_Flist.xml'.
+
+Voici la saisie du fichier XML dans le projet 'NewProject' (nous voulons inclure les fichiers
+'shakespeare.txt' et 'jules_verne.txt'):
+
+  ~> cat ~/Projects/NewProject/Work/B_Flist.xml
+
+  # <?xml version="1.0" encoding="iso-8859-1"?>
+  # <checkout>
+  #   <!--
+  #   <file name="/dir_a/dir_b/data.txt" />
+  #   -->
+  # </checkout>
+
+  ~> scite ~/Projects/NewProject/Work/B_Flist.xml
+
+  ~> cat ~/Projects/NewProject/Work/B_Flist.xml
+
+  # <?xml version="1.0" encoding="iso-8859-1"?>
+  # <checkout>
+  #   <file name="/home/user1/Documents/Book/shakespeare.txt" />
+  #   <file name="/home/user1/Documents/Book/jules_verne.txt" />
+  # </checkout>
+
+  ~>
+
+Voici la saisie du fichier XML dans le projet 'OtherProject' (nous voulons inclure les fichiers
+'shakespeare.txt' et 'lewis_carroll.txt'):
+
+  ~> cat ~/Projects/OtherProject/Work/B_Flist.xml
+
+  # <?xml version="1.0" encoding="iso-8859-1"?>
+  # <checkout>
+  #   <!--
+  #   <file name="/dir_a/dir_b/data.txt" />
+  #   -->
+  # </checkout>
+
+  ~> scite ~/Projects/OtherProject/Work/B_Flist.xml
+
+  ~> cat ~/Projects/OtherProject/Work/B_Flist.xml
+
+  # <?xml version="1.0" encoding="iso-8859-1"?>
+  # <checkout>
+  #   <file name="/home/user1/Documents/Book/shakespeare.txt" />
+  #   <file name="/home/user1/Documents/Book/lewis_carroll.txt" />
+  # </checkout>
+
+  ~>
+
+Maintenant on peut lancer 'r_checkout.pl' deux fois: une fois pour ~/Projects/NewProject/, ensuite
+pour ~/Projects/OtherProject/. (...et il n'y a pas de besoin pour changer de directory, nous restons
+dans notre directory d'accueil):
+
+  ~> perl Projects/NewProject/Cmd/r_checkout.pl
+
+  # ***************************
+  # ** Checking out programs **
+  # ***************************
+  #
+  # Project NewProject      ==> ~/Projects
+  #
+  # Ckout [  1/  2]             F_shakespeare_Z001.txt         -- ~/Documents/Book/shakespeare.txt
+  # Ckout [  2/  2] ** Write ** F_jules_verne_Z001.txt         << ~/Documents/Book/jules_verne.txt
+
+  ~> perl Projects/OtherProject/Cmd/r_checkout.pl
+
+  # ***************************
+  # ** Checking out programs **
+  # ***************************
+  #
+  # Project OtherProject    ==> ~/Projects
+  #
+  # Ckout [  1/  2] ** Write ** F_shakespeare_Z001.txt         << ~/Documents/Book/shakespeare.txt
+  # Ckout [  2/  2] ** Write ** F_lewis_carroll_Z001.txt       << ~/Documents/Book/lewis_carroll.txt
+
+  ~>
+
+Veuillez noter que le checkout du projet 'NewProject' n'a pas E<eacute>crit le fichier 'F_shakespeare_Z001.txt'.
+C'est tout E<agrave> fait normal, car nous avons dE<eacute>jE<agrave> fait un checkout du fichier 'shakespeare.txt' dans le projet
+'NewProject' rE<eacute>cemment (avec la modification des mots '...logis en paysan...' en '...logis E<agrave> Londres...').
+Il est E<eacute>galement important de noter que le checkout du fichier 'shakespeare.txt' du projet 'OtherProject'
+ne contient pas cette modification.
+
+=head2 r_apply.pl
+
+Pour faire des modifications dans '~/Documents/Book/' (fichiers 'shakespeare.txt', 'jules_verne.txt'
+and 'lewis_carroll.txt'), nous ne pouvons pas (ou plutE<ocirc>t: nous ne devrions pas...) modifier les fichiers
+directemment dans '~/Documents/Book/', mais nous pouvons faire des modifications dans les fichiers du
+projet dans '~/Projects/NewProject/Work/' et dans '~/Projects/OtherProject/Work/'. Nous allons
+utiliser 'r_apply.pl' plus tard pour transfE<eacute>rer les modifications dans '~/Documents/Book/'.
+
+Dans 'F_shakespeare_Z001.txt' ('OtherProject'), nous modifions "...logis en paysan..." en "...logis E<agrave>
+Cardiff...":
+
+  ~> grep "logis" Projects/OtherProject/Work/F_shakespeare_Z001.txt
+
+  # moi, il m'entretient au logis en paysan, ou pour mieux dire, il me garde ici sans
+
+  ~> scite Projects/OtherProject/Work/F_shakespeare_Z001.txt
+
+  ~> grep "logis" Projects/OtherProject/Work/F_shakespeare_Z001.txt
+
+  # moi, il m'entretient au logis a Cardiff, ou pour mieux dire, il me garde ici sans
+
+  ~> 
+
+Dans 'F_lewis_carroll_Z001.txt' ('OtherProject'), nous modifions "...valait la peine..." en "...valait
+l'effort...":
+
+  ~> grep "valait" Projects/OtherProject/Work/F_lewis_carroll_Z001.txt
+
+  # une guirlande de paquerettes valait la peine de se lever et d'aller cueillir les
+
+  ~> scite Projects/OtherProject/Work/F_lewis_carroll_Z001.txt
+
+  ~> grep "valait" Projects/OtherProject/Work/F_lewis_carroll_Z001.txt
+
+  # une guirlande de paquerettes valait l'effort de se lever et d'aller cueillir les
+
+  ~> 
+
+
+Dans 'F_jules_verne_Z001.txt' ('NewProject'), nous modifions "...orateurs qui honorent..." en
+"...orateurs qui valorisent...":
+
+  ~> grep "orateurs" Projects/NewProject/Work/F_jules_verne_Z001.txt
+
+  # l'attention. A l'un des plus grands orateurs qui honorent l'Angleterre, succedait
+
+  ~> scite Projects/NewProject/Work/F_jules_verne_Z001.txt
+
+  ~> grep "orateurs" Projects/NewProject/Work/F_jules_verne_Z001.txt
+
+  # l'attention. A l'un des plus grands orateurs qui valorisent l'Angleterre, succedait
+
+  ~>
+
+Pour transfE<eacute>rer les modifications (c'est-E<agrave>-dire mettre E<agrave> jour les fichiers originaux dans
+~/Documents/Book/), nous lanE<ccedil>ons 'r_apply.pl' deux fois: une premiE<egrave>re fois pour le projet
+'NewProject', une deuxiE<egrave>me fois pour le projet 'OtherProject' (...encore, il n'y a pas de
+nE<eacute>cessitE<eacute> de changer de directory, nous resons dans notre directory d'accueil):
+
+  ~> perl Projects/NewProject/Cmd/r_apply.pl
+
+  # *****************
+  # * Apply changes *
+  # *****************
+  #
+  # Project NewProject      ==> ~/Projects
+  #
+  # Apply [  1/  2] F_jules_verne_Z001.txt                                WRK ===== Update ====> ORG
+  # Apply [  2/  2] F_shakespeare_Z001.txt                                WRK ===== Update ====> ORG
+
+Malheureusement on ne peut pas lancer le deuxiE<egrave>me 'r_apply.pl' (quand on essaie, on obtient une erreur):
+
+  ~> perl Projects/OtherProject/Cmd/r_apply.pl
+
+  # *****************
+  # * Apply changes *
+  # *****************
+  #
+  # Project NewProject      ==> ~/Projects
+  #
+  # Error-0064: Current project is '/home/user1/Projects/OtherProject', but another
+  # project '/home/user1/Projects/NewProject' is already active at
+  # /perl/site/bin/vc_apply.pl line 118.
+
+Pour dE<eacute>bloquer la situation, il faut d'abord faire un 'reset':
+
+  ~> perl Projects/OtherProject/Cmd/r_reset.pl
+
+  # *********
+  # * Reset *
+  # *********
+  #
+  # Reset [  1/  3] rewrite ==> ~/Documents/Book/jules_verne.txt
+  # Reset [  2/  3] rewrite ==> ~/Documents/Book/lewis_carroll.txt
+  # Reset [  3/  3] rewrite ==> ~/Documents/Book/shakespeare.txt
+
+Maintenant on peut lancer le deuxiE<egrave>me 'r_apply.pl' avec succE<egrave>s:
+
+  ~> perl Projects/OtherProject/Cmd/r_apply.pl
+
+  # *****************
+  # * Apply changes *
+  # *****************
+  #
+  # Project OtherProject    ==> ~/Projects
+  #
+  # Apply [  1/  2] F_lewis_carroll_Z001.txt                              WRK ===== Update ====> ORG
+  # Apply [  2/  2] F_shakespeare_Z001.txt                                WRK ===== Update ====> ORG
+
+  ~>
+
+=head2 r_status.pl
+
+Nous souhaitons identifier les dE<eacute>tails de modification qui ont E<eacute>tE<eacute> fait pour un projet. Pour rE<eacute>aliser
+cette tE<acirc>che, nous utilisons le raccourci 'r_status.pl'.
+
+Voici le 'r_status.pl' pour le projet 'OtherProject':
+
+  ~> perl Projects/OtherProject/Cmd/r_status.pl
+
+  # *******************
+  # ** Status Report **
+  # *******************
+  #
+  # Project OtherProject    ==> ~/Projects
+  #
+  # ===============================================================================================
+  # [  1/  2] F_lewis_carroll_Z001.txt       ARC --I=0001/D=0001--> WRK -----------------> ORG
+  # ===============================================================================================
+  # ARC: 10/04/2010 14:45:46 ~/Programs/vc_archive/F_=home=klaus=Documents=Book=lewis_carroll.txt
+  # WRK: 10/04/2010 15:33:57 ~/Projects/OtherProject/Work/F_lewis_carroll_Z001.txt
+  # ORG: 10/04/2010 15:42:49 ~/Documents/Book/lewis_carroll.txt
+  #
+  # ARC->WRK: 8c8
+  # ARC->WRK: < une guirlande de paquerettes valait la peine de se lever et d'aller cueillir les
+  # ARC->WRK: ---
+  # ARC->WRK: > une guirlande de paquerettes valait l'effort de se lever et d'aller cueillir les
+  #
+  # ===============================================================================================
+  # [  2/  2] F_shakespeare_Z001.txt         ARC --I=0001/D=0001--> WRK -----------------> ORG
+  # ===============================================================================================
+  # ARC: 10/04/2010 14:43:24 ~/Programs/vc_archive/F_=home=klaus=Documents=Book=shakespeare.txt
+  # WRK: 10/04/2010 15:28:21 ~/Projects/OtherProject/Work/F_shakespeare_Z001.txt
+  # ORG: 10/04/2010 15:48:31 ~/Documents/Book/shakespeare.txt
+  #
+  # ARC->WRK: 5c5
+  # ARC->WRK: < moi, il m'entretient au logis en paysan, ou pour mieux dire, il me garde ici sans
+  # ARC->WRK: ---
+  # ARC->WRK: > moi, il m'entretient au logis a Cardiff, ou pour mieux dire, il me garde ici sans
+
+=head2 r_statchar.pl
+
+Le raccourci 'r_statchar.pl' donne un alignement par caractE<egrave>re:
+
+  ~> perl Projects/OtherProject/Cmd/r_status.pl
+
+  # *******************
+  # ** Status Report **
+  # *******************
+  #
+  # Project OtherProject    ==> ~/Projects
+  #
+  # ===============================================================================================
+  # [  1/  2] F_lewis_carroll_Z001.txt       ARC --I=0001/D=0001--> WRK -----------------> ORG
+  # ===============================================================================================
+  # ARC: 10/04/2010 14:45:46 ~/Programs/vc_archive/F_=home=klaus=Documents=Book=lewis_carroll.txt
+  # WRK: 10/04/2010 15:33:57 ~/Projects/OtherProject/Work/F_lewis_carroll_Z001.txt
+  # ORG: 10/04/2010 15:42:49 ~/Documents/Book/lewis_carroll.txt
+  #
+  # ARC->WRK: 8c8
+  # ARC->WRK: ---------------------------------------------------------------------------------------
+  # ARC->WRK: < une`guirlande`de`paquerettes`valait`la`peine  `de`se`lever`et`d'aller`cueillir`les~\
+  # ARC->WRK: *                                      *** *****                                      
+  # ARC->WRK: > une`guirlande`de`paquerettes`valait`l'  effort`de`se`lever`et`d'aller`cueillir`les~\
+  # ARC->WRK: ---------------------------------------------------------------------------------------
+  #
+  # ===============================================================================================
+  # [  2/  2] F_shakespeare_Z001.txt         ARC --I=0001/D=0001--> WRK -----------------> ORG
+  # ===============================================================================================
+  # ARC: 10/04/2010 14:43:24 ~/Programs/vc_archive/F_=home=klaus=Documents=Book=shakespeare.txt
+  # WRK: 10/04/2010 15:28:21 ~/Projects/OtherProject/Work/F_shakespeare_Z001.txt
+  # ORG: 10/04/2010 15:48:31 ~/Documents/Book/shakespeare.txt
+  #
+  # ARC->WRK: 5c5
+  # ARC->WRK: ---------------------------------------------------------------------------------------
+  # ARC->WRK: < moi,`il`m'entretient`au`logis`en`paysan ,`ou`pour`mieux`dire,`il`me`garde`ici`sans~\
+  # ARC->WRK: *                               ** * *****                                            
+  # ARC->WRK: > moi,`il`m'entretient`au`logis`a `Cardiff,`ou`pour`mieux`dire,`il`me`garde`ici`sans~\
+  # ARC->WRK: ---------------------------------------------------------------------------------------
+
+=head2 r_statdiff.pl
+
+Le raccourci 'r_statdiff.pl' donne la mE<ecirc>me information dans encore un autre format:
+
+  ~> perl Projects/OtherProject/Cmd/r_statdiff.pl
+
+  # *******************
+  # ** Status Report **
+  # *******************
+  #
+  # Project OtherProject    ==> ~/Projects
+  #
+  # [-] ARC/lewis_carroll.txt
+  # [+] WRK/lewis_carroll.txt
+  # @@ -4,7 +4,7 @@
+  #  pensait Alice, a quoi peut bien servir un livre ou il n'y a ni images ni dialogues ?"
+  #  Elle se demandait (dans la mesure ou elle etait capable de reflechir, car elle se
+  #  sentait tout endormie et toute stupide a cause de la chaleur) si le plaisir de tresser
+  # -une guirlande de paquerettes valait la peine de se lever et d'aller cueillir les
+  # +une guirlande de paquerettes valait l'effort de se lever et d'aller cueillir les
+  #  paquerettes, lorsque, brusquement, un Lapin Blanc aux yeux roses passa en courant tout
+  #  pres d'elle.
+  #  ==
+  #
+  # [-] ARC/shakespeare.txt
+  # [+] WRK/shakespeare.txt
+  # @@ -2,7 +2,7 @@
+  #  ecus dans son testament; et, comme tu dis, il a charge mon frere, sous peine de sa
+  #  malediction, de me bien elever, et voila la cause de mes chagrins. Il entretient mon
+  #  frere Jacques a l'ecole, et la renommee parle magnifiquement de ses progres. Pour
+  # -moi, il m'entretient au logis en paysan, ou pour mieux dire, il me garde ici sans
+  # +moi, il m'entretient au logis a Cardiff, ou pour mieux dire, il me garde ici sans
+  #  aucun entretien; car peut-on appeler entretien pour un gentilhomme de ma naissance,
+  #  un traitement qui ne differe en aucune facon de celui des boeufs a l'etable? Ses
+  #  chevaux sont mieux traites; car, outre qu'ils sont tres-bien nourris, on les dresse
+
+  ~>
+
+=head2 r_list_proj.pl
+
+Pour avoir un compte-rendu commun de tous les projets, nous utilisons le raccourci 'r_list_proj.pl'
+(le nom du projet n'a aucune importance, mais tous les raccourcis 'r_list_proj.pl' sont placE<eacute>s
+sous un directory de projet, par consE<eacute>quence nous devons choisir un projet -- nous choisission
+'OtherProject'):
+
+   ~> perl Projects/OtherProject/Cmd/r_list_proj.pl
+
+  # *****************************
+  # ** List Projects (Cleanup) **
+  # *****************************
+  #
+  # Reading ~/Programs/vc_archive/D_Coutlist.dat
+  #
+  # Project OtherProject    ==> ~/Projects
+  #
+  #    1. [CO=  1] NewProject      ~/Documents/Book/jules_verne.txt
+  #    2. [CO=  1] OtherProject    ~/Documents/Book/lewis_carroll.txt
+  #    3. [CO=  2] OtherProject    ~/Documents/Book/shakespeare.txt
+
+  ~>
+
+=head2 r_list_file.pl
+
+Pour obtenir des informations sur tous les fichiers dans tous les projets, nous lanE<ccedil>ons
+le raccourci 'r_list_file.pl':
+
+  ~> perl Projects/OtherProject/Cmd/r_list_file.pl
+
+  # **************************
+  # ** List Files (Cleanup) **
+  # **************************
+  #
+  # Reading ~/Programs/vc_archive/D_Coutlist.dat
+  #
+  # Project OtherProject    ==> ~/Projects
+  #
+  # List  [  1/  4] F_jules_verne_Z001.txt         => NewProject                ~/Projects
+  # List  [  2/  4] F_lewis_carroll_Z001.txt       => OtherProject              ~/Projects
+  # List  [  3/  4] F_shakespeare_Z001.txt         +  NewProject                ~/Projects
+  # List  [  4/  4] F_shakespeare_Z001.txt         => OtherProject              ~/Projects
+
+  ~>
+
+Le libellE<eacute> '=>' indique que la commande 'vc_apply.pl' a E<eacute>tE<eacute> lancE<eacute> pour le le fichier dans le projet,
+le libellE<eacute> '+' indique que des modifications ont E<eacute>tE<eacute> effectuE<eacute>es dans le fichier du projet, mais la
+commande 'vc_apply.pl' n'a pas encore E<eacute>tE<eacute> lancE<eacute>. (c'est le cas pour 'shakespeare.txt' du projet
+'NewProject')
+
+=head2 r_list_det.pl
+
+Avec le raccourci 'r_list_det.pl', on peut afficher la mE<ecirc>me information, mais dans un format diffE<eacute>rent:
+
+  ~> perl Projects/OtherProject/Cmd/r_list_det.pl
+
+  # ****************************
+  # ** List Details (Cleanup) **
+  # ****************************
+  #
+  # Reading ~/Programs/vc_archive/D_Coutlist.dat
+  #
+  # Project OtherProject    ==> ~/Projects
+  #
+  #    1. [CO=  1] NewProject      ~/Documents/Book/jules_verne.txt
+  #     => NewProject      ----> F_jules_verne_Z001.txt         10-Apr-2010 14:43:24 ~/Projects
+  #
+  #    2. [CO=  1] OtherProject    ~/Documents/Book/lewis_carroll.txt
+  #     => OtherProject    ----> F_lewis_carroll_Z001.txt       10-Apr-2010 14:45:46 ~/Projects
+  #
+  #    3. [CO=  2] OtherProject    ~/Documents/Book/shakespeare.txt
+  #     +  NewProject      ----> F_shakespeare_Z001.txt         10-Apr-2010 14:43:24 ~/Projects
+  #     => OtherProject    ----> F_shakespeare_Z001.txt         10-Apr-2010 14:45:46 ~/Projects
+
+  ~>
+
+=head2 r_reset.pl
+
+On utilise le raccourci 'r_reset.pl' pour annuler toutes les commandes 'vc_apply.pl'.
+
+  ~> perl Projects/OtherProject/Cmd/r_reset.pl
+
+  # *********
+  # * Reset *
+  # *********
+  #
+  # Reset [  1/  3] rewrite ==> ~/Documents/Book/jules_verne.txt
+  # Reset [  2/  3] rewrite ==> ~/Documents/Book/lewis_carroll.txt
+  # Reset [  3/  3] rewrite ==> ~/Documents/Book/shakespeare.txt
+
+  ~>
+
+Quand on relance la commande 'r_list_det.pl', on constate que les '=>' ont changE<eacute> en '+':
+
+  ~> perl Projects/OtherProject/Cmd/r_list_det.pl
+
+  # ****************************
+  # ** List Details (Cleanup) **
+  # ****************************
+  #
+  # Reading ~/Programs/vc_archive/D_Coutlist.dat
+  #
+  # Project * Reset *
+  #
+  #    1. [CO=  1]                 ~/Documents/Book/jules_verne.txt
+  #     +  NewProject      ----> F_jules_verne_Z001.txt         10-Apr-2010 14:43:24 ~/Projects
+  #
+  #    2. [CO=  1]                 ~/Documents/Book/lewis_carroll.txt
+  #     +  OtherProject    ----> F_lewis_carroll_Z001.txt       10-Apr-2010 14:45:46 ~/Projects
+  #
+  #    3. [CO=  2]                 ~/Documents/Book/shakespeare.txt
+  #     +  NewProject      ----> F_shakespeare_Z001.txt         10-Apr-2010 14:43:24 ~/Projects
+  #     +  OtherProject    ----> F_shakespeare_Z001.txt         10-Apr-2010 14:45:46 ~/Projects
+
+  ~>
+
+=head2 r_renew.pl
+
+Finalement, le raccourci 'r_renew.pl' nous permet de changer de projet facilement. Si vous lancez
+'r_renew.pl' dans un projet, toutes les modifications sont d'abord annulE<eacute>es, ensuite la commande
+'vc_apply.pl' sera appelE<eacute> pour transfE<eacute>rer les modifications du projet. En fait, les commandes
+suivantes sont appelE<eacute> par le raccourci 'r_renew.pl': 'vc_reset.pl', 'vc_list.pl', 'vc_checkout.pl'
+et 'vc_apply.pl'.
+
+  ~> perl Projects/OtherProject/Cmd/r_renew.pl
+
+  # *****************
+  # * Renew project *
+  # *****************
+  #
+  # Project OtherProject    ==> ~/Projects
+  #
+  # Reset [  1/  3]         ==> ~/Documents/Book/jules_verne.txt
+  # Reset [  2/  3]         ==> ~/Documents/Book/lewis_carroll.txt
+  # Reset [  3/  3]         ==> ~/Documents/Book/shakespeare.txt
+  # List  [  1/  4] F_jules_verne_Z001.txt         +  NewProject                ~/Projects
+  # List  [  2/  4] F_lewis_carroll_Z001.txt       +  OtherProject              ~/Projects
+  # List  [  3/  4] F_shakespeare_Z001.txt         +  NewProject                ~/Projects
+  # List  [  4/  4] F_shakespeare_Z001.txt         +  OtherProject              ~/Projects
+  # Ckout [  1/  2]             F_shakespeare_Z001.txt         -- ~/Documents/Book/shakespeare.txt
+  # Ckout [  2/  2]             F_lewis_carroll_Z001.txt       -- ~/Documents/Book/lewis_carroll.txt
+  # Apply [  1/  2] F_lewis_carroll_Z001.txt                              WRK ===== Update ====> ORG
+  # Apply [  2/  2] F_shakespeare_Z001.txt                                WRK ===== Update ====> ORG
+
+  ~>
 
 =head1 AUTEUR
 

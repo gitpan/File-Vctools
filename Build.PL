@@ -16,5 +16,5 @@ Module::Build->new(
                      'Algorithm::Diff' => 1.19_02,
                      'File::Slurp'     => 9999.12,
                    },
-  dist_abstract => 'Simple Version Control Tools using diff',
+  dist_abstract => 'Compare different versions of text files and identify changes',
 )->create_build_script;

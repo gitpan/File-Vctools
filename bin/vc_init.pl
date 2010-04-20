@@ -48,7 +48,12 @@ say '';
 my $show_dir = $cwd;
 $show_dir =~ s/\A\Q$ENV{USERPROFILE}/~/xms if defined $ENV{USERPROFILE};
 
-say "Project: $show_dir";
+my @z_ele = File::Spec->splitdir($show_dir);
+
+my $z_project = pop @z_ele;
+my $z_path    = File::Spec->catdir(@z_ele);
+
+printf "Project %-15s ==> %s\n", $z_project, $z_path;
 say '';
 
 my @files = grep {$_ ne $cnst_workdir
@@ -102,6 +107,7 @@ putinplace('Renew project', 'P', 'r_renew.pl',     "go('vc_reset');\n".
                                                    "go('vc_checkout', '-z');\n".
                                                    "go('vc_apply', '-q');\n");
 putinplace('Reset',         '',  'r_reset.pl',     "go('vc_reset');\n");
+putinplace('',              '',  'r_statchar.pl',  "go('vc_status', '-a', '-o', '-e', '-c');\n");
 putinplace('',              '',  'r_statdiff.pl',  "go('vc_status', '-a', '-o', '-u', '-n');\n");
 putinplace('',              '',  'r_status.pl',    "go('vc_status', '-a', '-o', '-e');\n");
 
@@ -167,7 +173,12 @@ sub putinplace {
           qq!my \$show_dir = \$curdir;\n!.
           qq!\$show_dir =~ s/\\A\\Q\$ENV{USERPROFILE}/~/xms if defined \$ENV{USERPROFILE};\n!.
           qq!\n!.
-          qq!say "Project: \$show_dir";\n!.
+          qq!my \@z_ele = File::Spec->splitdir(\$show_dir);\n!.
+          qq!\n!.
+          qq!my \$z_project = pop \@z_ele;\n!.
+          qq!my \$z_path    = File::Spec->catdir(\@z_ele);\n!.
+          qq!\n!.
+          qq!printf "Project %-15s ==> %s\\n", \$z_project, \$z_path;\n!.
           qq!say '';\n!.
           qq!\n!;
     }

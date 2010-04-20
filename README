@@ -1,6 +1,6 @@
-File-Vctools Version 0.02
+File-Vctools Version 0.03
 
-Reading XML and providing path information based on a pull-parser.
+Compare different versions of text files and identify changes
 
 There aren't any machine dependencies, no C compiler is required.
 

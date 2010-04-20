@@ -5,3 +5,14 @@ Revision history for File-Vctools
 
 0.02    10 Apr 2010
         Change header in documentation File-Vctools_de.pod and File-Vctools_fr.pod
+
+0.03    20 Apr 2010
+        Complete documentation also in French and in German
+        I added the idea of a "current project" to File::Vctools,
+        as a consequence, vc_list.pl now shows an additional line to indicate the current project
+        and vc_apply.pl aborts if you try to apply when your project is not current
+        ==> internally I had to restructure "D_coutlist.dat" to introduce an additional level of hash-keys
+        ==> {D_pmtab => ...} now contains what used to be under root
+        ==> and there is an additional { D_pmdef => {project} } to hold the name of the current project
+        ==> vc_status.pl now has a char-by-char comparison
+        ==> minor changes in vc_merge.pl

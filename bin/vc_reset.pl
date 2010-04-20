@@ -21,7 +21,7 @@ use File::Spec;
 use File::Basename;
 use File::Copy;
 use XML::Reader;
-use Storable qw(retrieve);
+use Storable qw(retrieve store);
 use File::Slurp;
 
 # determine the shell quote $q ==> (") on Windows, (') everywhere else...
@@ -70,25 +70,39 @@ my $pth_clist = File::Spec->rel2abs(File::Spec->catfile($VcArchDir, $cnst_clist)
 
 chdir $VcArchDir or die "Error-0060: Can't chdir '$VcArchDir' because $!";
 
-# ****************************
-# * reading 'D_Coutlist.dat' *
-# ****************************
+# ************************************
+# reading 'D_Coutlist.dat' into $pmtab
+# ************************************
 
 my $coutlist = {};
 
-if (-f $cnst_clist) {
-    $coutlist = retrieve($cnst_clist);
+if (-f $pth_clist) {
+    $coutlist = retrieve($pth_clist);
     unless (defined $coutlist) {
-        die "Error-0070: retrieve('$cnst_clist') returned undef";
+        die "Error-0070: retrieve('$pth_clist') returned undef";
     }
 }
 
+for (keys %$coutlist) {
+    unless (m{\A D_}xms) {
+        die "Error-0072: in retrieve('$pth_clist') found key = '$_', but expected /^D_/";
+    }
+}
+
+unless (exists $coutlist->{D_pmtab}) {
+    $coutlist->{D_pmtab} = {};
+}
+
+my $pmtab = $coutlist->{D_pmtab};
+
+#~ use Data::Dumper; print Dumper $pmtab;
+
 my %memlist;
 
-for my $fname (keys %$coutlist) {
-    for my $dirname (keys %{$coutlist->{$fname}}) {
-        my $p_orig = $coutlist->{$fname}{$dirname}{orig};
-        my $p_arch = $coutlist->{$fname}{$dirname}{arch};
+for my $fname (keys %$pmtab) {
+    for my $dirname (keys %{$pmtab->{$fname}}) {
+        my $p_orig = $pmtab->{$fname}{$dirname}{orig};
+        my $p_arch = $pmtab->{$fname}{$dirname}{arch};
         if (defined $p_orig and defined $p_arch) {
             $memlist{lc $p_arch} = { orig => $p_orig, arch => $p_arch };
         }
@@ -139,3 +153,7 @@ for (sort keys %memlist) {
         copy $p_arch, $p_orig or die "Error-0100: Can't copy('$p_arch', '$p_orig') because $!";
     }
 }
+
+$coutlist->{D_pmdef}{project} = undef;
+
+store $coutlist, $pth_clist or die "Error-0110: Can't store '$pth_clist'";

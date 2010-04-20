@@ -160,6 +160,9 @@ else {
             my $text_red  = $lines_red[$i_red]   // ''; chomp $text_red; # get rid of trailing newlines
             my $text_blue = $lines_blue[$i_blue] // '';                  # newlines already got rid of
 
+            $text_red  .= "\n"; # put trailing newline back on
+            $text_blue .= "\n"; # put trailing newline back on
+
             my @chars_red  = split m{}xms, $text_red;
             my @chars_blue = split m{}xms, $text_blue;
 
@@ -199,7 +202,9 @@ else {
 
             for my $ct (@cont) {
                 for ($ct->[0], $ct->[1]) {
-                    s{([[:cntrl:]~`])}{sprintf('~[%d]',ord($1))}xmsge;
+                    s{(~)}{sprintf('~[%d]',ord($1))}xmsge;
+                    s{\n}{~\\}xmsg;
+                    s{([[:cntrl:]`])}{sprintf('~[%d]',ord($1))}xmsge;
                     s{[ ]}'`'xmsg;
                 }
 
