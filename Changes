@@ -16,3 +16,20 @@ Revision history for File-Vctools
         ==> and there is an additional { D_pmdef => {project} } to hold the name of the current project
         ==> vc_status.pl now has a char-by-char comparison
         ==> minor changes in vc_merge.pl
+
+0.04    18 Jul 2010
+        The command 'vc_checkout.pl' now checks and eliminates all files that
+          are not listed in 'B_Flist.xml'.
+        Also, call XML::Reader version 0.37 the new way:
+        XML::Reader->new($cnst_VcParam, {mode => 'branches'}
+        in 'vc_checkout.pl': when you encounter a situation
+          "Error-0050: Found directory file '$_' which does not exist in archive"
+          then warn and carry on instead of just dying.
+        in 'r_renew.pl' (that's set up by 'vc_init.pl') add a second call to
+          'vc_checkout.pl'. 'r_renew.pl' (again set up by 'vc_init.pl') now looks
+          as follows:
+            go('vc_reset');
+            go('vc_checkout', '-z');
+            go('vc_list', '-n', '-z', '-c');
+            go('vc_checkout', '-z');
+            go('vc_apply', '-q');

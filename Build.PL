@@ -12,7 +12,7 @@ Module::Build->new(
   module_name   => 'File::Vctools',
   license       => 'perl',
   requires      => { 
-                     'XML::Reader'     => 0.32,
+                     'XML::Reader'     => 0.37,
                      'Algorithm::Diff' => 1.19_02,
                      'File::Slurp'     => 9999.12,
                    },

@@ -61,14 +61,14 @@ if (@_) {
 my $VcArchDir;
 my $DiffProgram;
 {
-    my $rdr = XML::Reader->newhd($cnst_VcParam, {filter => 5},
+    my $rdr = XML::Reader->new($cnst_VcParam, {mode => 'branches'},
       {root => '/vc/archive',  branch => ['/@path']},
       {root => '/vc/difftool', branch => ['/@prog']},
-    ) or die "Error-0030: Can't XML::Reader->newhd('$cnst_VcParam') because $!";
+    ) or die "Error-0030: Can't XML::Reader->new('$cnst_VcParam') because $!";
 
     while ($rdr->iterate) {
-        if ($rdr->rx == 0) { $VcArchDir   = $rdr->rvalue->[0]; }
-        if ($rdr->rx == 1) { $DiffProgram = $rdr->rvalue->[0]; }
+        if ($rdr->rx == 0) { ($VcArchDir)   = $rdr->value; }
+        if ($rdr->rx == 1) { ($DiffProgram) = $rdr->value; }
     }
 }
 
@@ -140,7 +140,7 @@ delete $dirlist{lc $cnst_xmllist}; # don't look at the xml checkout list
 
 for (keys %dirlist) {
     unless (exists $archlist{$_}) {
-        die "Error-0070: Found directory file '$_' which does not exist in archive";
+        warn "Warning-0070: Found file '$_' which does not exist in archive";
     }
 }
 

@@ -69,14 +69,14 @@ unless (-f $magic_file) {
 my $VcArchDir;
 my $DiffProgram;
 {
-    my $rdr = XML::Reader->newhd($cnst_VcParam, {filter => 5},
+    my $rdr = XML::Reader->new($cnst_VcParam, {mode => 'branches'},
       {root => '/vc/archive',  branch => ['/@path']},
       {root => '/vc/difftool', branch => ['/@prog']},
-    ) or die "Error-0020: Can't XML::Reader->newhd('$cnst_VcParam') because $!";
+    ) or die "Error-0020: Can't XML::Reader->new('$cnst_VcParam') because $!";
 
     while ($rdr->iterate) {
-        if ($rdr->rx == 0) { $VcArchDir   = $rdr->rvalue->[0]; }
-        if ($rdr->rx == 1) { $DiffProgram = $rdr->rvalue->[0]; } # Don't worry about $DiffProgram
+        if ($rdr->rx == 0) { ($VcArchDir)   = $rdr->value; }
+        if ($rdr->rx == 1) { ($DiffProgram) = $rdr->value; } # Don't worry about $DiffProgram
     }
 }
 
@@ -131,7 +131,7 @@ my %stemlist = map { ($_ =~ m{\A (.*) \. [^\.]* \z}xms ? $1 : $_) => 1 } keys %d
 
 for (keys %dirlist) {
     unless (exists $archlist{$_}) {
-        die "Error-0050: Found directory file '$_' which does not exist in archive";
+        warn "Warning-0050: Found file '$_' which does not exist in archive";
     }
 }
 
@@ -147,14 +147,57 @@ if (@ARGV) {
 else {
     my $xmlflist = File::Spec->catfile($cnst_workdir, $cnst_xmllist);
 
-    my $rdr = XML::Reader->newhd($xmlflist, {filter => 5},
+    my $rdr = XML::Reader->new($xmlflist, {mode => 'branches'},
       {root => '/checkout/file',  branch => ['/@name']},
     );
 
     if ($rdr) {
+        # begin changes for ver 0.04 Klaus Eichner, 18 July 2010
+
+        my %InXml;
         while ($rdr->iterate) {
-            if ($rdr->rx == 0) { push @flist, $rdr->rvalue->[0]; }
+            push @flist, $rdr->value;
+
+            my $name_abs = File::Spec->rel2abs($rdr->value);
+            my $name_lc  = lc $name_abs;
+            $InXml{$name_lc}++;
         }
+
+        if (-e $cnst_workdir) {
+            for my $name_id (read_dir $cnst_workdir) {
+                next unless $name_id =~ m{\A F_}xmsi;
+
+                my ($name_lc, $name_abs);
+
+                for my $n_lc (keys %$pmtab) {
+                    if (exists $pmtab->{$n_lc}{$cnst_worklc}{id}
+                    and $pmtab->{$n_lc}{$cnst_worklc}{id} eq $name_id) {
+                        $name_lc  = $n_lc;
+                        $name_abs = $pmtab->{$n_lc}{$cnst_worklc}{orig};
+                        last;
+                    }
+                }
+                unless (defined $name_lc) {
+                    warn "Warning-0055: Found file '$name_id' which does not exist in archive";
+                    next;
+                }
+
+                next if $InXml{$name_lc}; # here we decide if a file is, or is not, listed in 'Work/B_Flist.xml'
+
+                # début modif Klaus Eichner, 2010-02-19:
+                my $showname = $name_abs;
+                $showname =~ s/\A\Q$ENV{USERPROFILE}/~/xms if defined $ENV{USERPROFILE};
+                # fin   modif Klaus Eichner, 2010-02-19:
+
+                # here we remove a file '$name_id' because it is not listed in 'Work/B_Flist.xml'
+                printf "Clear [%3d/%3d] ** Clear ** %-30s >> %s\n",
+                  0, 0, $name_id, $showname;
+
+                my $name_ifull = File::Spec->catfile($cnst_workdir, $name_id);
+                unlink $name_ifull or die "Error-0057: Can't unlink '$name_ifull' because $!";
+            }
+        }
+        # end   changes for ver 0.04 Klaus Eichner, 18 July 2010
     }
 }
 

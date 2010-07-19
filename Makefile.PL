@@ -12,7 +12,7 @@ WriteMakefile(
     NAME              => 'File::Vctools',
     VERSION_FROM      => 'lib/File/Vctools.pm', # finds $VERSION
     PREREQ_PM         => { 
-                           'XML::Reader'     => 0.32,
+                           'XML::Reader'     => 0.37,
                            'Algorithm::Diff' => 1.19_02,
                            'File::Slurp'     => 9999.12,
                          }, # e.g., Module::Name => 1.1

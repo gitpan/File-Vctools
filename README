@@ -1,18 +1,110 @@
-File-Vctools Version 0.03
+File-Vctools Version 0.04
 
-Compare different versions of text files and identify changes
+NAME
 
-There aren't any machine dependencies, no C compiler is required.
-
+  Compare different versions of text files and identify changes
 
 INSTALLATION
 
-To install this module, run the following commands:
+  To install this module, run the following commands:
 
-	perl Makefile.PL
-	make
-	make test
-	make install
+  perl Makefile.PL
+  make
+  make test
+  make install
+
+SYNOPSIS
+
+  File::Vctools is a collection of utility programs that help you
+  to organise your projects. Currently, File::Vctools only runs on
+  Windows and on Linux, but if somebody wants to run it on a platform
+  other than Windows or Linux, the conversion should be easy. If you
+  already have converted File::Vctools to a different platform, let me
+  know at <klaus03@gmail.com>, I appreciate any feedback.
+
+  Here is a first program that runs the components of File::Vctools:
+
+  use strict;
+  use warnings;
+  use 5.010;
+
+  use File::Vctools qw(get_mpath get_difftool);
+  use File::Spec;
+  use File::Slurp;
+  use File::Temp qw(tempdir);
+
+  my $difftool = get_difftool();
+  my $mpath    = get_mpath();
+  my $cwd      = File::Spec->rel2abs('.');
+  END { chdir $cwd if defined $cwd; }
+  my $tempdir  = tempdir(CLEANUP => 1);
+
+  say "difftool is $difftool";
+  say "mpath    is $mpath";
+  say "cwd      is $cwd";
+  say "tempdir  is $tempdir";
+  say '';
+
+  mkdir File::Spec->catdir($tempdir, 'XmlRepo');
+  mkdir File::Spec->catdir($tempdir, 'test_arch');
+  mkdir File::Spec->catdir($tempdir, 'Original');
+  mkdir File::Spec->catdir($tempdir, 'P001');
+
+  $ENV{VCTOOLDIR} = File::Spec->catdir($tempdir, 'XmlRepo');
+
+  write_file(File::Spec->catdir($tempdir, 'XmlRepo', 'vc_parameter.xml'),
+    qq{<?xml version="1.0" encoding="iso-8859-1"?>\n},
+    qq{<vc>\n},
+    qq{  <archive path="}, File::Spec->catdir($tempdir, 'test_arch'),
+      qq{" />\n},
+    qq{</vc>\n},
+  );
+
+  write_file(File::Spec->catfile($tempdir, 'Original', 'file.txt'),
+    qq{Line001\n},
+    qq{Line002\n},
+    qq{Line003\n},
+    qq{Line004\n},
+  );
+
+  chdir File::Spec->catdir($tempdir, 'P001') or die "Error-0010: chdir $!";
+
+  system $^X, File::Spec->catfile($mpath, 'vc_init.pl');
+  system $^X, File::Spec->catfile($mpath, 'vc_checkout.pl'),
+    File::Spec->catfile($tempdir, 'Original', 'file.txt');
+
+  write_file(File::Spec->catfile('Work', 'F_file_Z001.txt'),
+    qq{Line001\n},
+    qq{Line002 ***\n},
+    qq{Line003\n},
+    qq{Line004\n},
+  );
+
+  system $^X, File::Spec->catfile($mpath, 'vc_apply.pl');
+  system $^X, File::Spec->catfile($mpath, 'vc_status.pl'), '-a', '-o';
+  system $^X, File::Spec->catfile($mpath, 'vc_list.pl');
+  system $^X, File::Spec->catfile($mpath, 'vc_reset.pl');
+
+  chdir 'Data' or die "Error-0020: chdir $!";
+
+  write_file('orig.txt',
+    qq{Orig001\n},
+    qq{Orig002\n},
+    qq{Orig003\n},
+    qq{Orig004\n},
+    qq{Orig005\n},
+  );
+
+  write_file('patch.txt',
+    qq{\@\@ -2,4 +2,4 \@\@\n},
+    qq{ Orig002\n},
+    qq{-Orig003\n},
+    qq{+Orig003***\n},
+    qq{ Orig004\n},
+  );
+
+  system $^X, File::Spec->catfile($mpath, 'vc_merge.pl'),
+    '--input=orig.txt', '--diff=patch.txt', '--output=out.txt';
 
 SUPPORT AND DOCUMENTATION
 
