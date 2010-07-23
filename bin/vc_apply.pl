@@ -132,17 +132,24 @@ my %archlist = map  { lc $pmtab->{$_}{$cnst_worklc}{id} => [$pmtab->{$_}{$cnst_w
                grep { exists $pmtab->{$_}{$cnst_worklc}; }
                keys %$pmtab;
 
-my %dirlist  = -e $cnst_workdir ? map { lc $_ => 1 } read_dir $cnst_workdir : ();
-
-delete $dirlist{lc $cnst_xmllist}; # don't look at the xml checkout list
-
-# use Data::Dumper; print Dumper { coutlist => $pmtab, archlist => \%archlist, dirlist => \%dirlist };
-
-for (keys %dirlist) {
-    unless (exists $archlist{$_}) {
-        warn "Warning-0070: Found file '$_' which does not exist in archive";
-    }
-}
+# ******************************************************************************
+# ** executive decision by Klaus Eichner, 23 July 2010:
+# ** We *DO NOT* warn in vc_apply.pl if the file does not exist in the archive
+#
+# my %dirlist  = -e $cnst_workdir ? map { $_ => 1 } read_dir $cnst_workdir : ();
+#
+# delete $dirlist{$cnst_xmllist}; # don't look at the xml checkout list
+#
+# ** use Data::Dumper; print Dumper
+# **   { coutlist => $pmtab, archlist => \%archlist, dirlist => \%dirlist };
+#
+# for (keys %dirlist) {
+#     unless (exists $archlist{lc $_}) {
+#         printf "Alert [%3d/%3d] %-30s -- %s\n",
+#           0, 0, $_, 'does not exist in archive';
+#     }
+# }
+# ******************************************************************************
 
 for (sort keys %archlist) {
     my $file_arch = File::Spec->catfile($VcArchDir, $archlist{$_}[0]{arch});

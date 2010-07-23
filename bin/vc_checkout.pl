@@ -113,31 +113,11 @@ my $pmtab = $coutlist->{D_pmtab};
 
 #~ use Data::Dumper; print Dumper $pmtab;
 
-# *************************************************
-# * check that each $dirlist exists in $archlist. *
-# *************************************************
-
-my %archlist = map  { lc $pmtab->{$_}{$cnst_worklc}{id} => $pmtab->{$_}{$cnst_worklc} }
-               grep { exists $pmtab->{$_}{$cnst_worklc}; }
-               keys %$pmtab;
-
-my %dirlist  = -e $cnst_workdir ? map { lc $_ => 1 } read_dir $cnst_workdir : ();
-
-delete $dirlist{lc $cnst_xmllist}; # don't look at the xml checkout list
-
-my %stemlist = map { ($_ =~ m{\A (.*) \. [^\.]* \z}xms ? $1 : $_) => 1 } keys %dirlist;
-
-# use Data::Dumper; print Dumper { coutlist => $pmtab, archlist => \%archlist, dirlist => \%dirlist };
-
-for (keys %dirlist) {
-    unless (exists $archlist{$_}) {
-        warn "Warning-0050: Found file '$_' which does not exist in archive";
-    }
-}
-
 # **********************************************************
 # * Populating @flist with the filenames to be checked out *
 # **********************************************************
+
+my $updctr = 0;
 
 my @flist;
 
@@ -156,52 +136,82 @@ else {
 
         my %InXml;
         while ($rdr->iterate) {
-            push @flist, $rdr->value;
-
-            my $name_abs = File::Spec->rel2abs($rdr->value);
-            my $name_lc  = lc $name_abs;
-            $InXml{$name_lc}++;
+            my $xp_abs = File::Spec->rel2abs($rdr->value);
+            my $xp_lc  = lc $xp_abs;
+            $InXml{$xp_lc}{code} = 'c'; # 'c' = 'checkout (per default)'
+            $InXml{$xp_lc}{abs}  = $xp_abs;
         }
 
         if (-e $cnst_workdir) {
             for my $name_id (read_dir $cnst_workdir) {
                 next unless $name_id =~ m{\A F_}xmsi;
 
-                my ($name_lc, $name_abs);
+                my $name_lc;
 
                 for my $n_lc (keys %$pmtab) {
-                    if (exists $pmtab->{$n_lc}{$cnst_worklc}{id}
+                    if (exists $pmtab->{$n_lc}{$cnst_worklc}
                     and $pmtab->{$n_lc}{$cnst_worklc}{id} eq $name_id) {
-                        $name_lc  = $n_lc;
-                        $name_abs = $pmtab->{$n_lc}{$cnst_worklc}{orig};
+                        $name_lc = $n_lc;
                         last;
                     }
                 }
                 unless (defined $name_lc) {
-                    warn "Warning-0055: Found file '$name_id' which does not exist in archive";
                     next;
                 }
 
-                next if $InXml{$name_lc}; # here we decide if a file is, or is not, listed in 'Work/B_Flist.xml'
+                next if $InXml{$name_lc};
 
-                # début modif Klaus Eichner, 2010-02-19:
-                my $showname = $name_abs;
-                $showname =~ s/\A\Q$ENV{USERPROFILE}/~/xms if defined $ENV{USERPROFILE};
-                # fin   modif Klaus Eichner, 2010-02-19:
+                $InXml{$name_lc}{code} = 'r'; # 'r' = 'removed (and therefore DO NOT checkout)'
 
-                # here we remove a file '$name_id' because it is not listed in 'Work/B_Flist.xml'
-                printf "Clear [%3d/%3d] ** Clear ** %-30s >> %s\n",
-                  0, 0, $name_id, $showname;
-
-                my $name_ifull = File::Spec->catfile($cnst_workdir, $name_id);
-                unlink $name_ifull or die "Error-0057: Can't unlink '$name_ifull' because $!";
+                delete $pmtab->{$name_lc}{$cnst_worklc};
+                $updctr++;
             }
         }
+
+        for my $xp_lc (sort keys %InXml) {
+            next unless $InXml{$xp_lc}{code} eq 'c';
+            push @flist, $InXml{$xp_lc}{abs};
+        }
+
+        # Here we eliminate the $pmtab entry if the file in work/ does not exist
+        for my $n_lc (keys %$pmtab) {
+           if (exists $pmtab->{$n_lc}{$cnst_worklc}) {
+                my $name_ifull = File::Spec->catfile($cnst_workdir, $pmtab->{$n_lc}{$cnst_worklc}{id});
+                unless (-e $name_ifull) {
+                    delete $pmtab->{$n_lc}{$cnst_worklc};
+                    $updctr++;
+                }
+            }
+        }
+
         # end   changes for ver 0.04 Klaus Eichner, 18 July 2010
     }
 }
 
-my $updctr = 0;
+# *************************************************
+# * check that each $dirlist exists in $archlist. *
+# *************************************************
+
+my %archlist = map  { lc $pmtab->{$_}{$cnst_worklc}{id} => $pmtab->{$_}{$cnst_worklc} }
+               grep { exists $pmtab->{$_}{$cnst_worklc}; }
+               keys %$pmtab;
+
+my %dirlist  = -e $cnst_workdir ? map { $_ => 1 } read_dir $cnst_workdir : ();
+
+delete $dirlist{$cnst_xmllist}; # don't look at the xml checkout list
+
+my %stemlist = map { ($_ =~ m{\A (.*) \. [^\.]* \z}xms ? lc($1) : lc($_)) => 1 } keys %dirlist;
+
+# use Data::Dumper; print Dumper { coutlist => $pmtab, archlist => \%archlist, dirlist => \%dirlist };
+
+for (keys %dirlist) {
+    unless (exists $archlist{lc $_}) {
+        #~ warn "Warning-01: Found file '$_' which does not exist in archive";
+
+        printf "Alert [%3d/%3d] -- Alert -- %-30s -- %s\n",
+           0, 0, $_, 'does not exist in archive';
+    }
+}
 
 my $line_max = @flist;
 my $line_ctr = 0;

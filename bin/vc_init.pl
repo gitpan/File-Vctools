@@ -104,8 +104,7 @@ putinplace('',              '',  'r_list_file.pl', "go('vc_list', '-c', '-n');\n
 putinplace('',              '',  'r_list_proj.pl', "go('vc_list', '-c');\n");
 putinplace('Renew project', 'P', 'r_renew.pl',     "go('vc_reset');\n".
                                                    "go('vc_checkout', '-z');\n".
-                                                   "go('vc_list', '-n', '-z', '-c');\n".
-                                                   "go('vc_checkout', '-z');\n".
+                                                 # "go('vc_list', '-n', '-z', '-c');\n".
                                                    "go('vc_apply', '-q');\n");
 putinplace('Reset',         '',  'r_reset.pl',     "go('vc_reset');\n");
 putinplace('',              '',  'r_statchar.pl',  "go('vc_status', '-a', '-o', '-e', '-c');\n");

@@ -33,3 +33,14 @@ Revision history for File-Vctools
             go('vc_list', '-n', '-z', '-c');
             go('vc_checkout', '-z');
             go('vc_apply', '-q');
+
+0.05    22 Jul 2010
+        Refactoring 'vc_checkout.pl': compare all files in /Work/ against the
+          checkout-status.
+        As a consequence, 'vc_checkout.pl' has grown up and does not rely anymore
+          on 'vc_list.pl' being run first, therefore the call to 'vc_list.pl' could
+          be removed from 'r_renew.pl'.
+        'r_renew.pl' is now much simpler, it looks as follows:
+            go('vc_reset');
+            go('vc_checkout', '-z');
+            go('vc_apply', '-q');

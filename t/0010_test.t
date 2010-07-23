@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use 5.010;
 
-use Test::More tests => 230;
+use Test::More tests => 237;
 
 use File::Vctools qw(get_mpath get_difftool);
 use Cwd;
@@ -921,15 +921,43 @@ preparations();
       File::Spec->catdir($mpath, 'vc_checkout.pl'),
     );
 
-    ok(!-e File::Spec->catdir('Work', 'F_test-002_Z001.txt'), 'test v0.04-003: after second co F_test-002_Z001.txt has been removed under Work/');
+    ok( -e File::Spec->catdir('Work', 'F_test-002_Z001.txt'), 'test v0.04-003: after second co F_test-002_Z001.txt still exists under Work/');
+    ok(!-e File::Spec->catdir('Work', 'F_test-002_Z002.txt'), 'test v0.04-003: after second co F_test-002_Z002.txt does not exist in Work/');
+    ok(!-e File::Spec->catdir('Work', 'F_test-002_Z003.txt'), 'test v0.04-003: after second co F_test-002_Z003.txt does not exist in Work/');
     ok( -e File::Spec->catdir('Work', 'F_test-003_Z001.txt'), 'test v0.04-003: after second co F_test-003_Z001.txt still exists under Work/');
 
-    like($stdout, qr{^ Clear \s \[ \s+ 0/ \s+ 0\] \s+ \*\* \s+ Clear \s+ \*\* \s+ F_test-002_Z \d{3} \.txt \s}xms,
-                                                              'test v0.04-003: stdout contains clean up message for test-002');
+    like($stdout, qr{^ Alert \s \[ \s+ 0/ \s+ 0\] \s+ -- \s+ Alert \s+ -- \s+ F_test-002_Z001\.txt \s}xms,
+                                                              'test v0.04-003: stdout contains clean up message for test-002Z001');
     like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 1\] \s+ F_test-003_Z \d{3} \.txt \s}xms,
                                                               'test v0.04-003: stdout contains second co message test-003');
     is($rc, 0,                                                'test v0.04-003: first co rc is zero');
     is($stderr, '',                                           'test v0.04-003: first co stderr is empty');
+}
+
+{
+    write_file(File::Spec->catdir($tempdir, 'Prj_03', 'Work', 'B_Flist.xml'),
+      qq{<?xml version="1.0" encoding="iso-8859-1"?>\n},
+      qq{<checkout>\n},
+      qq{  <file name="}, File::Spec->catdir($tempdir, 'Data_01', 'test-002.txt'), qq{" />\n},
+      qq{  <file name="}, File::Spec->catdir($tempdir, 'Data_01', 'test-003.txt'), qq{" />\n},
+      qq{</checkout>\n},
+    );
+
+    my ($stdout, $stderr, $rc) = my_system($^X,
+      File::Spec->catdir($mpath, 'vc_checkout.pl'),
+    );
+
+    ok( -e File::Spec->catdir('Work', 'F_test-002_Z001.txt'), 'test v0.04-004: after second co F_test-002_Z001.txt still exists under Work/');
+    ok( -e File::Spec->catdir('Work', 'F_test-002_Z002.txt'), 'test v0.04-004: after second co F_test-002_Z002.txt still exists under Work/');
+    ok(!-e File::Spec->catdir('Work', 'F_test-002_Z003.txt'), 'test v0.04-004: after second co F_test-002_Z003.txt does not exist in Work/');
+    ok( -e File::Spec->catdir('Work', 'F_test-003_Z001.txt'), 'test v0.04-004: after second co F_test-003_Z001.txt still exists under Work/');
+
+    like($stdout, qr{^ Alert \s \[ \s+ 0/ \s+ 0\] \s+ -- \s+ Alert \s+ -- \s+ F_test-002_Z001\.txt \s}xms,
+                                                              'test v0.04-004: stdout contains clean up message for test-002Z001');
+    like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 2\] \s+ \*\* \s+ Write \s+ \*\* \s+ F_test-002_Z002\.txt \s}xms,
+                                                              'test v0.04-004: stdout contains second co message test-002');
+    is($rc, 0,                                                'test v0.04-004: first co rc is zero');
+    is($stderr, '',                                           'test v0.04-004: first co stderr is empty');
 }
 
 {
@@ -954,16 +982,6 @@ preparations();
 
     is($rc, 0,                                             'test v0.04-099: co rc is zero');
 
-    # Warning-0050: Found file 'yy_dummy_z002.txt'
-    # Warning-0050: Found file 'f_dummy_z001.txt'
-    # Warning-0055: Found file 'F_dummy_Z001.txt'
-
-    like($stderr, qr{^ Warning-0050: \s Found \s file \s 'yy_dummy_z002.txt'}xms,
-                                                           'test v0.04-099: Msg-50 yy_dummy_z002.txt');
-    like($stderr, qr{^ Warning-0050: \s Found \s file \s 'f_dummy_z001.txt'}xms,
-                                                           'test v0.04-099: Msg-50 f_dummy_z001.txt');
-    like($stderr, qr{^ Warning-0055: \s Found \s file \s 'F_dummy_Z001.txt'}xms,
-                                                           'test v0.04-099: Msg-55 F_dummy_z001.txt');
 }
 
 # ****************************

@@ -13,11 +13,11 @@ name: File-Vctools
 provides:
   File::Vctools:
     file: lib/File/Vctools.pm
-    version: 0.04
+    version: 0.05
 requires:
   Algorithm::Diff: 1.1902
   File::Slurp: 9999.12
   XML::Reader: 0.37
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.04
+version: 0.05
