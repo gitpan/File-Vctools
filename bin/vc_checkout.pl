@@ -49,9 +49,9 @@ unless ($opts{z}) {
 
     my $p_show = File::Spec->rel2abs('.');
 
-    # début modif Klaus Eichner, 2010-02-19:
+    # start Klaus Eichner, 2010-02-19:
     $p_show =~ s/\A\Q$ENV{USERPROFILE}/~/xms if defined $ENV{USERPROFILE};
-    # fin   modif Klaus Eichner, 2010-02-19:
+    # end   Klaus Eichner, 2010-02-19:
 
     say "Project: $p_show";
     say '';
@@ -101,7 +101,7 @@ if (-f $pth_clist) {
 
 for (keys %$coutlist) {
     unless (m{\A D_}xms) {
-        die "Error-0042: in retrieve('$pth_clist') found key = '$_', but expected /^D_/";
+        die "Error-0050: in retrieve('$pth_clist') found key = '$_', but expected /^D_/";
     }
 }
 
@@ -163,8 +163,44 @@ else {
 
                 $InXml{$name_lc}{code} = 'r'; # 'r' = 'removed (and therefore DO NOT checkout)'
 
+                # restore 'orig' from 'arch'
+                # **************************
+
+                my $name_abs   = $pmtab->{$name_lc}{$cnst_worklc}{orig};
+                my $name_arch  = $pmtab->{$name_lc}{$cnst_worklc}{arch};
+                my $name_afull = File::Spec->catfile($VcArchDir, $name_arch);
+
+                # start Klaus Eichner, 2010-02-19:
+                my $showname = $name_abs;
+                $showname =~ s/\A\Q$ENV{USERPROFILE}/~/xms if defined $ENV{USERPROFILE};
+                # end   Klaus Eichner, 2010-02-19:
+
+                if (-e $name_afull) {
+                    printf "Clear [%3d/%3d] -- Clear -- %-30s -- %s\n",
+                      0,0, $name_id, $showname;
+
+                    copy $name_afull, $name_abs or die "Error-0060: Can't copy('$name_afull', '$name_abs') because $!";
+                }
+                else {
+                    printf "Void  [%3d/%3d] -- Void  -- %-30s -- %s\n",
+                      0,0, $name_id, $showname;
+                }
+
                 delete $pmtab->{$name_lc}{$cnst_worklc};
                 $updctr++;
+
+                # if $pmtab->{$name_lc} is empty, then remove $name_lc (from $pmtab as well as from $VcArchDir)
+                # *********************************************************************************************
+
+                unless (keys %{$pmtab->{$name_lc}}) {
+                    printf "Wipe  [%3d/%3d] -- Wipe  -- %-30s -- %s\n",
+                      0,0, $name_id, $showname;
+
+                    unlink $name_afull or warn "Warning-05: Could not unlink '$name_afull' because $!";
+
+                    delete $pmtab->{$name_lc};
+                    $updctr++;
+                }
             }
         }
 
@@ -178,8 +214,46 @@ else {
            if (exists $pmtab->{$n_lc}{$cnst_worklc}) {
                 my $name_ifull = File::Spec->catfile($cnst_workdir, $pmtab->{$n_lc}{$cnst_worklc}{id});
                 unless (-e $name_ifull) {
+
+                    # restore 'orig' from 'arch'
+                    # **************************
+
+                    my $name_abs   = $pmtab->{$n_lc}{$cnst_worklc}{orig};
+                    my $name_arch  = $pmtab->{$n_lc}{$cnst_worklc}{arch};
+                    my $name_id    = $pmtab->{$n_lc}{$cnst_worklc}{id};
+                    my $name_afull = File::Spec->catfile($VcArchDir, $name_arch);
+
+                    # start Klaus Eichner, 2010-02-19:
+                    my $showname = $name_abs;
+                    $showname =~ s/\A\Q$ENV{USERPROFILE}/~/xms if defined $ENV{USERPROFILE};
+                    # end   Klaus Eichner, 2010-02-19:
+
+                    if (-e $name_afull) {
+                        printf "Clear [%3d/%3d] -- Clear -- %-30s -- %s\n",
+                          0,0, $name_id, $showname;
+
+                        copy $name_afull, $name_abs or die "Error-0070: Can't copy('$name_afull', '$name_abs') because $!";
+                    }
+                    else {
+                        printf "Void  [%3d/%3d] -- Void  -- %-30s -- %s\n",
+                          0,0, $name_id, $showname;
+                    }
+
                     delete $pmtab->{$n_lc}{$cnst_worklc};
                     $updctr++;
+
+                    # if $pmtab->{$name_lc} is empty, then remove $name_lc (from $pmtab as well as from $VcArchDir)
+                    # *********************************************************************************************
+
+                    unless (keys %{$pmtab->{$n_lc}}) {
+                        printf "Wipe  [%3d/%3d] -- Wipe  -- %-30s -- %s\n",
+                          0,0, $name_id, $showname;
+
+                        unlink $name_afull or warn "Warning-05: Could not unlink '$name_afull' because $!";
+
+                        delete $pmtab->{$n_lc};
+                        $updctr++;
+                    }
                 }
             }
         }
@@ -223,7 +297,7 @@ for my $name_rel (@flist) {
     my $name_lc  = lc $name_abs;
 
     if ($name_abs =~ m{[%=]}xms) {
-        die "Error-0060: Found characters /[%=]/ in \$name_abs = '$name_abs'";
+        die "Error-0080: Found characters /[%=]/ in \$name_abs = '$name_abs'";
     }
 
     my @name_ele = File::Spec->splitdir($name_abs);
@@ -235,7 +309,7 @@ for my $name_rel (@flist) {
     }
 
     unless (@name_ele) {
-        die "Error-0070: No filename in argument '$name_abs'";
+        die "Error-0090: No filename in argument '$name_abs'";
     }
 
     my $name_short = $name_ele[-1];
@@ -260,13 +334,13 @@ for my $name_rel (@flist) {
     }
 
     unless (defined $name_id) {
-        die "Error-0080: Unable to allocate name for '$name_short' in dir '$cnst_workdir' after 1000 attempts";
+        die "Error-0100: Unable to allocate name for '$name_short' in dir '$cnst_workdir' after 1000 attempts";
     }
 
-    # début modif Klaus Eichner, 2010-02-19:
+    # start Klaus Eichner, 2010-02-19:
     my $showname = $name_abs;
     $showname =~ s/\A\Q$ENV{USERPROFILE}/~/xms if defined $ENV{USERPROFILE};
-    # fin   modif Klaus Eichner, 2010-02-19:
+    # end   Klaus Eichner, 2010-02-19:
 
     if (exists $pmtab->{$name_lc}{$cnst_worklc}{id}) {
         printf "Ckout [%3d/%3d]             %-30s -- %s\n",
@@ -290,7 +364,7 @@ for my $name_rel (@flist) {
     my $stamp = localtime;
 
     unless (-e $cnst_workdir) {
-        mkdir $cnst_workdir or die "Error-0090: Can't mkdir '$cnst_workdir' because $!";
+        mkdir $cnst_workdir or die "Error-0110: Can't mkdir '$cnst_workdir' because $!";
     }
 
     my $block = {
@@ -305,15 +379,15 @@ for my $name_rel (@flist) {
     $updctr++;
 
     unless (-e $name_afull) {
-        copy $name_abs, $name_afull or die "Error-0100: Can't copy('$name_abs', '$name_afull') because $!";
+        copy $name_abs, $name_afull or die "Error-0120: Can't copy('$name_abs', '$name_afull') because $!";
     }
 
     my $name_ifull = File::Spec->catfile($cnst_workdir, $name_id);
-    copy $name_afull, $name_ifull or die "Error-0110: Can't copy('$name_afull', '$name_ifull') because $!";
+    copy $name_afull, $name_ifull or die "Error-0130: Can't copy('$name_afull', '$name_ifull') because $!";
 }
 
 if ($updctr) {
-    store $coutlist, $pth_clist or die "Error-0120: Can't store into '$pth_clist'";
+    store $coutlist, $pth_clist or die "Error-0140: Can't store into '$pth_clist'";
 }
 
 unless ($opts{z}) {

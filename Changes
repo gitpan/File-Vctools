@@ -44,3 +44,8 @@ Revision history for File-Vctools
             go('vc_reset');
             go('vc_checkout', '-z');
             go('vc_apply', '-q');
+
+0.06    24 Jul 2010
+        add housekeeping to 'vc-checkout.pl' (clean up after a file has been removed from
+        'B-Flist.xml')
+        reformat and renumber testcases in 't/0010-test.t'

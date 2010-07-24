@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use 5.010;
 
-use Test::More tests => 237;
+use Test::More tests => 250;
 
 use File::Vctools qw(get_mpath get_difftool);
 use Cwd;
@@ -30,9 +30,9 @@ preparations();
       > \s+ an \s+ enigmatical \s+ personage, \s+ about \s+ whom \s+ little \s+ was \s+
     }xms;
 
-    is($rc, 256,             'diff-World80-simple: rc is 256');
-    like($stdout, $difflist, 'diff-World80-simple: stdout shows the diff');
-    is($stderr, '',          'diff-World80-simple: stderr is empty');
+    is($rc, 256,             'Case-001-01: diff-World80-simple rc is 256');
+    like($stdout, $difflist, 'Case-001-02: diff-World80-simple stdout shows the diff');
+    is($stderr, '',          'Case-001-03: diff-World80-simple stderr is empty');
 }
 
 # perform a unified diff (without option '-u')
@@ -51,9 +51,9 @@ preparations();
         known, \s+ except \s+ that \s+ he \s+ was \s+ a \s+ polished \s+ man \s+ of \s+ the \s+
     }xms;
 
-    is($rc, 256,             'diff-World80-unified: rc is 256');
-    like($stdout, $difflist, 'diff-World80-unified: stdout shows the diff');
-    is($stderr, '',          'diff-World80-unified: stderr is empty');
+    is($rc, 256,             'Case-002-01: diff-World80-unified rc is 256');
+    like($stdout, $difflist, 'Case-002-02: diff-World80-unified stdout shows the diff');
+    is($stderr, '',          'Case-002-03: diff-World80-unified stderr is empty');
 }
 
 # initialising Prj_01:
@@ -80,30 +80,30 @@ preparations();
 
     my ($stdout, $stderr, $rc) = my_system($^X, File::Spec->catdir($mpath, 'vc_init.pl'));
 
-    is($rc, 0,                                          'init-prj01: rc is zero');
-    is($stderr, '',                                     'init-prj01: stderr is empty');
+    is($rc, 0,                                          'Case-003-01: init-prj01 rc is zero');
+    is($stderr, '',                                     'Case-003-02: init-prj01 stderr is empty');
 
-    like($stdout, qr{==> \s a_Prj_01\.txt   \s}xms,     'init-prj01: stdout contains "a_Prj_01.txt"');
-    like($stdout, qr{==> \s r_apply\.pl     \s}xms,     'init-prj01: stdout contains "r_apply.pl"');
-    like($stdout, qr{==> \s r_checkout\.pl  \s}xms,     'init-prj01: stdout contains "r_checkout.pl"');
-    like($stdout, qr{==> \s r_list_det\.pl  \s}xms,     'init-prj01: stdout contains "r_list_det.pl"');
-    like($stdout, qr{==> \s r_list_file\.pl \s}xms,     'init-prj01: stdout contains "r_list_file.pl"');
-    like($stdout, qr{==> \s r_list_proj\.pl \s}xms,     'init-prj01: stdout contains "r_list_proj.pl"');
-    like($stdout, qr{==> \s r_renew\.pl     \s}xms,     'init-prj01: stdout contains "r_renew.pl"');
-    like($stdout, qr{==> \s r_reset\.pl     \s}xms,     'init-prj01: stdout contains "r_reset.pl"');
-    like($stdout, qr{==> \s r_statdiff\.pl  \s}xms,     'init-prj01: stdout contains "r_statdiff.pl"');
-    like($stdout, qr{==> \s r_status\.pl    \s}xms,     'init-prj01: stdout contains "r_status.pl"');
+    like($stdout, qr{==> \s a_Prj_01\.txt   \s}xms,     'Case-003-03: init-prj01 stdout contains "a_Prj_01.txt"');
+    like($stdout, qr{==> \s r_apply\.pl     \s}xms,     'Case-003-04: init-prj01 stdout contains "r_apply.pl"');
+    like($stdout, qr{==> \s r_checkout\.pl  \s}xms,     'Case-003-05: init-prj01 stdout contains "r_checkout.pl"');
+    like($stdout, qr{==> \s r_list_det\.pl  \s}xms,     'Case-003-06: init-prj01 stdout contains "r_list_det.pl"');
+    like($stdout, qr{==> \s r_list_file\.pl \s}xms,     'Case-003-07: init-prj01 stdout contains "r_list_file.pl"');
+    like($stdout, qr{==> \s r_list_proj\.pl \s}xms,     'Case-003-08: init-prj01 stdout contains "r_list_proj.pl"');
+    like($stdout, qr{==> \s r_renew\.pl     \s}xms,     'Case-003-09: init-prj01 stdout contains "r_renew.pl"');
+    like($stdout, qr{==> \s r_reset\.pl     \s}xms,     'Case-003-10: init-prj01 stdout contains "r_reset.pl"');
+    like($stdout, qr{==> \s r_statdiff\.pl  \s}xms,     'Case-003-11: init-prj01 stdout contains "r_statdiff.pl"');
+    like($stdout, qr{==> \s r_status\.pl    \s}xms,     'Case-003-12: init-prj01 stdout contains "r_status.pl"');
 
-    ok(-f File::Spec->catfile('Cmd', 'a_Prj_01.txt'),   'init-prj01: file "a_Prj_01.txt"   actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_apply.pl'),     'init-prj01: file "r_apply.pl"     actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_checkout.pl'),  'init-prj01: file "r_checkout.pl"  actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_list_det.pl'),  'init-prj01: file "r_list_det.pl"  actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_list_file.pl'), 'init-prj01: file "r_list_file.pl" actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_list_proj.pl'), 'init-prj01: file "r_list_proj.pl" actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_renew.pl'),     'init-prj01: file "r_renew.pl"     actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_reset.pl'),     'init-prj01: file "r_reset.pl"     actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_statdiff.pl'),  'init-prj01: file "r_statdiff.pl"  actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_status.pl'),    'init-prj01: file "r_status.pl"    actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'a_Prj_01.txt'),   'Case-003-13: init-prj01 file "a_Prj_01.txt"   actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_apply.pl'),     'Case-003-14: init-prj01 file "r_apply.pl"     actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_checkout.pl'),  'Case-003-15: init-prj01 file "r_checkout.pl"  actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_list_det.pl'),  'Case-003-16: init-prj01 file "r_list_det.pl"  actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_list_file.pl'), 'Case-003-17: init-prj01 file "r_list_file.pl" actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_list_proj.pl'), 'Case-003-18: init-prj01 file "r_list_proj.pl" actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_renew.pl'),     'Case-003-19: init-prj01 file "r_renew.pl"     actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_reset.pl'),     'Case-003-20: init-prj01 file "r_reset.pl"     actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_statdiff.pl'),  'Case-003-21: init-prj01 file "r_statdiff.pl"  actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_status.pl'),    'Case-003-22: init-prj01 file "r_status.pl"    actually exists');
 }
 
 # initialising Prj_02:
@@ -115,30 +115,30 @@ preparations();
 
     my ($stdout, $stderr, $rc) = my_system($^X, File::Spec->catdir($mpath, 'vc_init.pl'));
 
-    is($rc, 0,                                          'init-prj02: rc is zero');
-    is($stderr, '',                                     'init-prj02: stderr is empty');
+    is($rc, 0,                                          'Case-004-01: init-prj02 rc is zero');
+    is($stderr, '',                                     'Case-004-02: init-prj02 stderr is empty');
 
-    like($stdout, qr{==> \s a_Prj_02\.txt   \s}xms,     'init-prj02: stdout contains "a_Prj_02.txt"');
-    like($stdout, qr{==> \s r_apply\.pl     \s}xms,     'init-prj02: stdout contains "r_apply.pl"');
-    like($stdout, qr{==> \s r_checkout\.pl  \s}xms,     'init-prj02: stdout contains "r_checkout.pl"');
-    like($stdout, qr{==> \s r_list_det\.pl  \s}xms,     'init-prj02: stdout contains "r_list_det.pl"');
-    like($stdout, qr{==> \s r_list_file\.pl \s}xms,     'init-prj02: stdout contains "r_list_file.pl"');
-    like($stdout, qr{==> \s r_list_proj\.pl \s}xms,     'init-prj02: stdout contains "r_list_proj.pl"');
-    like($stdout, qr{==> \s r_renew\.pl     \s}xms,     'init-prj02: stdout contains "r_renew.pl"');
-    like($stdout, qr{==> \s r_reset\.pl     \s}xms,     'init-prj02: stdout contains "r_reset.pl"');
-    like($stdout, qr{==> \s r_statdiff\.pl  \s}xms,     'init-prj02: stdout contains "r_statdiff.pl"');
-    like($stdout, qr{==> \s r_status\.pl    \s}xms,     'init-prj02: stdout contains "r_status.pl"');
+    like($stdout, qr{==> \s a_Prj_02\.txt   \s}xms,     'Case-004-03: init-prj02 stdout contains "a_Prj_02.txt"');
+    like($stdout, qr{==> \s r_apply\.pl     \s}xms,     'Case-004-04: init-prj02 stdout contains "r_apply.pl"');
+    like($stdout, qr{==> \s r_checkout\.pl  \s}xms,     'Case-004-05: init-prj02 stdout contains "r_checkout.pl"');
+    like($stdout, qr{==> \s r_list_det\.pl  \s}xms,     'Case-004-06: init-prj02 stdout contains "r_list_det.pl"');
+    like($stdout, qr{==> \s r_list_file\.pl \s}xms,     'Case-004-07: init-prj02 stdout contains "r_list_file.pl"');
+    like($stdout, qr{==> \s r_list_proj\.pl \s}xms,     'Case-004-08: init-prj02 stdout contains "r_list_proj.pl"');
+    like($stdout, qr{==> \s r_renew\.pl     \s}xms,     'Case-004-09: init-prj02 stdout contains "r_renew.pl"');
+    like($stdout, qr{==> \s r_reset\.pl     \s}xms,     'Case-004-10: init-prj02 stdout contains "r_reset.pl"');
+    like($stdout, qr{==> \s r_statdiff\.pl  \s}xms,     'Case-004-11: init-prj02 stdout contains "r_statdiff.pl"');
+    like($stdout, qr{==> \s r_status\.pl    \s}xms,     'Case-004-12: init-prj02 stdout contains "r_status.pl"');
 
-    ok(-f File::Spec->catfile('Cmd', 'a_Prj_02.txt'),   'init-prj02: file "a_Prj_02.txt"   actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_apply.pl'),     'init-prj02: file "r_apply.pl"     actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_checkout.pl'),  'init-prj02: file "r_checkout.pl"  actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_list_det.pl'),  'init-prj02: file "r_list_det.pl"  actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_list_file.pl'), 'init-prj02: file "r_list_file.pl" actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_list_proj.pl'), 'init-prj02: file "r_list_proj.pl" actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_renew.pl'),     'init-prj02: file "r_renew.pl"     actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_reset.pl'),     'init-prj02: file "r_reset.pl"     actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_statdiff.pl'),  'init-prj02: file "r_statdiff.pl"  actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_status.pl'),    'init-prj02: file "r_status.pl"    actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'a_Prj_02.txt'),   'Case-004-13: init-prj02 file "a_Prj_02.txt"   actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_apply.pl'),     'Case-004-14: init-prj02 file "r_apply.pl"     actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_checkout.pl'),  'Case-004-15: init-prj02 file "r_checkout.pl"  actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_list_det.pl'),  'Case-004-16: init-prj02 file "r_list_det.pl"  actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_list_file.pl'), 'Case-004-17: init-prj02 file "r_list_file.pl" actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_list_proj.pl'), 'Case-004-18: init-prj02 file "r_list_proj.pl" actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_renew.pl'),     'Case-004-19: init-prj02 file "r_renew.pl"     actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_reset.pl'),     'Case-004-20: init-prj02 file "r_reset.pl"     actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_statdiff.pl'),  'Case-004-21: init-prj02 file "r_statdiff.pl"  actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_status.pl'),    'Case-004-22: init-prj02 file "r_status.pl"    actually exists');
 }
 
 # initialising Prj_03:
@@ -150,30 +150,30 @@ preparations();
 
     my ($stdout, $stderr, $rc) = my_system($^X, File::Spec->catdir($mpath, 'vc_init.pl'));
 
-    is($rc, 0,                                          'init-prj03: rc is zero');
-    is($stderr, '',                                     'init-prj03: stderr is empty');
+    is($rc, 0,                                          'Case-005-01: init-prj03 rc is zero');
+    is($stderr, '',                                     'Case-005-02: init-prj03 stderr is empty');
 
-    like($stdout, qr{==> \s a_Prj_03\.txt   \s}xms,     'init-prj03: stdout contains "a_Prj_03.txt"');
-    like($stdout, qr{==> \s r_apply\.pl     \s}xms,     'init-prj03: stdout contains "r_apply.pl"');
-    like($stdout, qr{==> \s r_checkout\.pl  \s}xms,     'init-prj03: stdout contains "r_checkout.pl"');
-    like($stdout, qr{==> \s r_list_det\.pl  \s}xms,     'init-prj03: stdout contains "r_list_det.pl"');
-    like($stdout, qr{==> \s r_list_file\.pl \s}xms,     'init-prj03: stdout contains "r_list_file.pl"');
-    like($stdout, qr{==> \s r_list_proj\.pl \s}xms,     'init-prj03: stdout contains "r_list_proj.pl"');
-    like($stdout, qr{==> \s r_renew\.pl     \s}xms,     'init-prj03: stdout contains "r_renew.pl"');
-    like($stdout, qr{==> \s r_reset\.pl     \s}xms,     'init-prj03: stdout contains "r_reset.pl"');
-    like($stdout, qr{==> \s r_statdiff\.pl  \s}xms,     'init-prj03: stdout contains "r_statdiff.pl"');
-    like($stdout, qr{==> \s r_status\.pl    \s}xms,     'init-prj03: stdout contains "r_status.pl"');
+    like($stdout, qr{==> \s a_Prj_03\.txt   \s}xms,     'Case-005-03: init-prj03 stdout contains "a_Prj_03.txt"');
+    like($stdout, qr{==> \s r_apply\.pl     \s}xms,     'Case-005-04: init-prj03 stdout contains "r_apply.pl"');
+    like($stdout, qr{==> \s r_checkout\.pl  \s}xms,     'Case-005-05: init-prj03 stdout contains "r_checkout.pl"');
+    like($stdout, qr{==> \s r_list_det\.pl  \s}xms,     'Case-005-06: init-prj03 stdout contains "r_list_det.pl"');
+    like($stdout, qr{==> \s r_list_file\.pl \s}xms,     'Case-005-07: init-prj03 stdout contains "r_list_file.pl"');
+    like($stdout, qr{==> \s r_list_proj\.pl \s}xms,     'Case-005-08: init-prj03 stdout contains "r_list_proj.pl"');
+    like($stdout, qr{==> \s r_renew\.pl     \s}xms,     'Case-005-09: init-prj03 stdout contains "r_renew.pl"');
+    like($stdout, qr{==> \s r_reset\.pl     \s}xms,     'Case-005-10: init-prj03 stdout contains "r_reset.pl"');
+    like($stdout, qr{==> \s r_statdiff\.pl  \s}xms,     'Case-005-11: init-prj03 stdout contains "r_statdiff.pl"');
+    like($stdout, qr{==> \s r_status\.pl    \s}xms,     'Case-005-12: init-prj03 stdout contains "r_status.pl"');
 
-    ok(-f File::Spec->catfile('Cmd', 'a_Prj_03.txt'),   'init-prj03: file "a_Prj_03.txt"   actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_apply.pl'),     'init-prj03: file "r_apply.pl"     actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_checkout.pl'),  'init-prj03: file "r_checkout.pl"  actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_list_det.pl'),  'init-prj03: file "r_list_det.pl"  actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_list_file.pl'), 'init-prj03: file "r_list_file.pl" actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_list_proj.pl'), 'init-prj03: file "r_list_proj.pl" actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_renew.pl'),     'init-prj03: file "r_renew.pl"     actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_reset.pl'),     'init-prj03: file "r_reset.pl"     actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_statdiff.pl'),  'init-prj03: file "r_statdiff.pl"  actually exists');
-    ok(-f File::Spec->catfile('Cmd', 'r_status.pl'),    'init-prj03: file "r_status.pl"    actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'a_Prj_03.txt'),   'Case-005-13: init-prj03 file "a_Prj_03.txt"   actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_apply.pl'),     'Case-005-14: init-prj03 file "r_apply.pl"     actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_checkout.pl'),  'Case-005-15: init-prj03 file "r_checkout.pl"  actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_list_det.pl'),  'Case-005-16: init-prj03 file "r_list_det.pl"  actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_list_file.pl'), 'Case-005-17: init-prj03 file "r_list_file.pl" actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_list_proj.pl'), 'Case-005-18: init-prj03 file "r_list_proj.pl" actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_renew.pl'),     'Case-005-19: init-prj03 file "r_renew.pl"     actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_reset.pl'),     'Case-005-20: init-prj03 file "r_reset.pl"     actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_statdiff.pl'),  'Case-005-21: init-prj03 file "r_statdiff.pl"  actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_status.pl'),    'Case-005-22: init-prj03 file "r_status.pl"    actually exists');
 }
 
 # successfully checking out 2 files in Prj_01 (plus 1 checkout of a non-existent file):
@@ -190,10 +190,10 @@ preparations();
       File::Spec->catdir($tempdir, 'Data_01', 'test-003.txt'),
     );
 
-    ok(-e File::Spec->catdir('Work', 'F_test-003_Z001.txt'),                                                     'co-prj01-test-003: checked-out file does actually exist under Work/');
-    like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 1\] \s \*\* \s \S+ \s \*\* \s F_test-003_Z \d{3} \.txt \s}xms,     'co-prj01-test-003: stdout contains checkout message');
-    is($rc, 0,                                                                                                   'co-prj01-test-003: rc is zero');
-    is($stderr, '',                                                                                              'co-prj01-test-003: stderr is empty');
+    ok(-e File::Spec->catdir('Work', 'F_test-003_Z001.txt'),                                                     'Case-006-01: co-prj01-test-003 checked-out file does actually exist under Work/');
+    like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 1\] \s \*\* \s \S+ \s \*\* \s F_test-003_Z \d{3} \.txt \s}xms,     'Case-006-02: co-prj01-test-003 stdout contains checkout message');
+    is($rc, 0,                                                                                                   'Case-006-03: co-prj01-test-003 rc is zero');
+    is($stderr, '',                                                                                              'Case-006-04: co-prj01-test-003 stderr is empty');
 }
 
 {
@@ -202,10 +202,10 @@ preparations();
       File::Spec->catdir($tempdir, 'Data_02', 'example-004.txt'),
     );
 
-    ok(-e File::Spec->catdir('Work', 'F_example-004_Z001.txt'),                                                  'co-prj01-exmp-004: checked-out file does actually exist under Work/');
-    like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 1\] \s \*\* \s \S+ \s \*\* \s F_example-004_Z \d{3} \.txt \s}xms,  'co-prj01-exmp-004: stdout contains checkout message');
-    is($rc, 0,                                                                                                   'co-prj01-exmp-004: rc is zero');
-    is($stderr, '',                                                                                              'co-prj01-exmp-004: stderr is empty');
+    ok(-e File::Spec->catdir('Work', 'F_example-004_Z001.txt'),                                                  'Case-007-01: co-prj01-exmp-004 checked-out file does actually exist under Work/');
+    like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 1\] \s \*\* \s \S+ \s \*\* \s F_example-004_Z \d{3} \.txt \s}xms,  'Case-007-02: co-prj01-exmp-004 stdout contains checkout message');
+    is($rc, 0,                                                                                                   'Case-007-03: co-prj01-exmp-004 rc is zero');
+    is($stderr, '',                                                                                              'Case-007-04: co-prj01-exmp-004 stderr is empty');
 }
 
 {
@@ -214,9 +214,9 @@ preparations();
       File::Spec->catdir($tempdir, 'Data_99', 'nfound-999.txt'),
     );
 
-    like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 1\] \s -- \s+ \*\* \s not \s found \s \*\*}xms,                    'co-prj01-nfnd-999: stdout contains not-found message');
-    is($rc, 0,                                                                                                   'co-prj01-nfnd-999: rc is zero');
-    is($stderr, '',                                                                                              'co-prj01-nfnd-999: stderr is empty');
+    like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 1\] \s -- \s+ \*\* \s not \s found \s \*\*}xms,                    'Case-008-01: co-prj01-nfnd-999 stdout contains not-found message');
+    is($rc, 0,                                                                                                   'Case-008-02: co-prj01-nfnd-999 rc is zero');
+    is($stderr, '',                                                                                              'Case-008-03: co-prj01-nfnd-999 stderr is empty');
 }
 
 # modifying the 2 files in Prj_01:
@@ -238,16 +238,16 @@ preparations();
 
     my $write_ok = write_file($filename, {err_mode => 'quiet'}, \$content);
 
-    is($nbl_bef, 35, 'upd-prj01-test-003: no of lines before update');
+    is($nbl_bef, 35, 'Case-009-01: upd-prj01-test-003 no of lines before update');
 
-    is($chg01, 1,    'upd-prj01-test-003: two subsequent lines deleted');
-    is($chg02, 1,    'upd-prj01-test-003: one line inserted');
-    is($chg03, 1,    'upd-prj01-test-003: one line modified');
-    is($chg04, 1,    'upd-prj01-test-003: another line modified');
+    is($chg01, 1,    'Case-009-02: upd-prj01-test-003 two subsequent lines deleted');
+    is($chg02, 1,    'Case-009-03: upd-prj01-test-003 one line inserted');
+    is($chg03, 1,    'Case-009-04: upd-prj01-test-003 one line modified');
+    is($chg04, 1,    'Case-009-05: upd-prj01-test-003 another line modified');
 
-    is($nbl_aft,  34,'upd-prj01-test-003: no of lines after update');
+    is($nbl_aft,  34,'Case-009-06: upd-prj01-test-003 no of lines after update');
 
-    ok($write_ok,    'upd-prj01-test-003: file successfully written back');
+    ok($write_ok,    'Case-009-07: upd-prj01-test-003 file successfully written back');
 }
 
 {
@@ -265,15 +265,15 @@ preparations();
 
     my $write_ok = write_file($filename, {err_mode => 'quiet'}, \$content);
 
-    is($nbl_bef, 35, 'upd-prj01-exmp-004: no of lines before update');
+    is($nbl_bef, 35, 'Case-010-01: upd-prj01-exmp-004 no of lines before update');
 
-    is($chg01, 1,    'upd-prj01-exmp-004: two subsequent lines deleted');
-    is($chg02, 1,    'upd-prj01-exmp-004: one line inserted');
-    is($chg03, 1,    'upd-prj01-exmp-004: one line modified');
+    is($chg01, 1,    'Case-010-02: upd-prj01-exmp-004 two subsequent lines deleted');
+    is($chg02, 1,    'Case-010-03: upd-prj01-exmp-004 one line inserted');
+    is($chg03, 1,    'Case-010-04: upd-prj01-exmp-004 one line modified');
 
-    is($nbl_aft,  34,'upd-prj01-exmp-004: no of lines after update');
-
-    ok($write_ok,    'upd-prj01-exmp-004: file successfully written back');
+    is($nbl_aft,  34,'Case-010-05: upd-prj01-exmp-004 no of lines after update');
+    
+    ok($write_ok,    'Case-010-06: upd-prj01-exmp-004 file successfully written back');
 }
 
 # applying changes in the 2 files of Prj_01:
@@ -296,14 +296,14 @@ preparations();
     my $act_test = $stdout =~ m{F_test-003_Z001\.txt    \s+ (\w+ \s+ --I=\d+/D=\d+--> \s+ \w+)}xms ? $1 : '?';
     my $act_exmp = $stdout =~ m{F_example-004_Z001\.txt \s+ (\w+ \s+ --I=\d+/D=\d+--> \s+ \w+)}xms ? $1 : '?';
 
-    is($act_test, 'WRK --I=0003/D=0004--> ORG', 'co-prj01-apply: message >>test<<');
-    is($act_exmp, 'WRK --I=0002/D=0003--> ORG', 'co-prj01-apply: message >>exmp<<');
-    is($rc, 0,                                  'co-prj01-apply: rc is zero');
-    is($stderr, '',                             'co-prj01-apply: check STDERR');
-    is($nbl_test_bef, 35,                       'co-prj01-apply: nb lines >>test<< before');
-    is($nbl_exmp_bef, 35,                       'co-prj01-apply: nb lines >>exmp<< before');
-    is($nbl_test_aft, 34,                       'co-prj01-apply: nb lines >>test<< after');
-    is($nbl_exmp_aft, 34,                       'co-prj01-apply: nb lines >>exmp<< after');
+    is($act_test, 'WRK --I=0003/D=0004--> ORG', 'Case-011-01: co-prj01-apply message >>test<<');
+    is($act_exmp, 'WRK --I=0002/D=0003--> ORG', 'Case-011-02: co-prj01-apply message >>exmp<<');
+    is($rc, 0,                                  'Case-011-03: co-prj01-apply rc is zero');
+    is($stderr, '',                             'Case-011-04: co-prj01-apply check STDERR');
+    is($nbl_test_bef, 35,                       'Case-011-05: co-prj01-apply nb lines >>test<< before');
+    is($nbl_exmp_bef, 35,                       'Case-011-06: co-prj01-apply nb lines >>exmp<< before');
+    is($nbl_test_aft, 34,                       'Case-011-07: co-prj01-apply nb lines >>test<< after');
+    is($nbl_exmp_aft, 34,                       'Case-011-08: co-prj01-apply nb lines >>exmp<< after');
 }
 
 # successfully checking out 2 files in Prj_02 (plus 1 checkout of a non-existent file):
@@ -320,10 +320,10 @@ preparations();
       File::Spec->catdir($tempdir, 'Data_01', 'test-003.txt'),
     );
 
-    ok(-e File::Spec->catdir('Work', 'F_test-003_Z001.txt'),                                                    'co-prj02-test-003: checked-out file does actually exist under Work/');
-    like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 1\] \s \*\* \s \S+ \s \*\* \s F_test-003_Z \d{3} \.txt \s}xms,    'co-prj02-test-003: stdout contains checkout message');
-    is($rc, 0,                                                                                                  'co-prj02-test-003: rc is zero');
-    is($stderr, '',                                                                                             'co-prj02-test-003: stderr is empty');
+    ok(-e File::Spec->catdir('Work', 'F_test-003_Z001.txt'),                                                    'Case-012-01: co-prj02-test-003 checked-out file does actually exist under Work/');
+    like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 1\] \s \*\* \s \S+ \s \*\* \s F_test-003_Z \d{3} \.txt \s}xms,    'Case-012-02: co-prj02-test-003 stdout contains checkout message');
+    is($rc, 0,                                                                                                  'Case-012-03: co-prj02-test-003 rc is zero');
+    is($stderr, '',                                                                                             'Case-012-04: co-prj02-test-003 stderr is empty');
 }
 
 {
@@ -332,10 +332,10 @@ preparations();
       File::Spec->catdir($tempdir, 'Data_02', 'example-005.txt'),
     );
 
-    ok(-e File::Spec->catdir('Work', 'F_example-005_Z001.txt'),                                                 'co-prj02-exmp-005: checked-out file does actually exist under Work/');
-    like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 1\] \s \*\* \s \S+ \s \*\* \s F_example-005_Z \d{3} \.txt \s}xms, 'co-prj02-exmp-005: stdout contains checkout message');
-    is($rc, 0,                                                                                                  'co-prj02-exmp-005: rc is zero');
-    is($stderr, '',                                                                                             'co-prj02-exmp-005: stderr is empty');
+    ok(-e File::Spec->catdir('Work', 'F_example-005_Z001.txt'),                                                 'Case-013-01: co-prj02-exmp-005 checked-out file does actually exist under Work/');
+    like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 1\] \s \*\* \s \S+ \s \*\* \s F_example-005_Z \d{3} \.txt \s}xms, 'Case-013-02: co-prj02-exmp-005 stdout contains checkout message');
+    is($rc, 0,                                                                                                  'Case-013-03: co-prj02-exmp-005 rc is zero');
+    is($stderr, '',                                                                                             'Case-013-04: co-prj02-exmp-005 stderr is empty');
 }
 
 {
@@ -344,9 +344,9 @@ preparations();
       File::Spec->catdir($tempdir, 'Data_88', 'nfound-888.txt'),
     );
 
-    like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 1\] \s -- \s+ \*\* \s not \s found \s \*\*}xms,                   'co-prj02-nfnd-888: stdout contains not-found message');
-    is($rc, 0,                                                                                                  'co-prj02-nfnd-888: rc is zero');
-    is($stderr, '',                                                                                             'co-prj02-nfnd-888: stderr is empty');
+    like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 1\] \s -- \s+ \*\* \s not \s found \s \*\*}xms,                   'Case-014-01: co-prj02-nfnd-888 stdout contains not-found message');
+    is($rc, 0,                                                                                                  'Case-014-02: co-prj02-nfnd-888 rc is zero');
+    is($stderr, '',                                                                                             'Case-014-03: co-prj02-nfnd-888 stderr is empty');
 }
 
 # modifying the 2 files in Prj_02:
@@ -368,16 +368,16 @@ preparations();
 
     my $write_ok = write_file($filename, {err_mode => 'quiet'}, \$content);
 
-    is($nbl_bef, 35, 'upd-prj02-test-003: no of lines before update');
+    is($nbl_bef, 35, 'Case-015-01: upd-prj02-test-003 no of lines before update');
 
-    is($chg01, 1,    'upd-prj02-test-003: two subsequent lines deleted');
-    is($chg02, 1,    'upd-prj02-test-003: four lines inserted');
-    is($chg03, 1,    'upd-prj02-test-003: one line modified');
-    is($chg04, 1,    'upd-prj02-test-003: another line modified');
+    is($chg01, 1,    'Case-015-02: upd-prj02-test-003 two subsequent lines deleted');
+    is($chg02, 1,    'Case-015-03: upd-prj02-test-003 four lines inserted');
+    is($chg03, 1,    'Case-015-04: upd-prj02-test-003 one line modified');
+    is($chg04, 1,    'Case-015-05: upd-prj02-test-003 another line modified');
 
-    is($nbl_aft,  37,'upd-prj02-test-003: no of lines after update');
+    is($nbl_aft,  37,'Case-015-06: upd-prj02-test-003 no of lines after update');
 
-    ok($write_ok,    'upd-prj02-test-003: file successfully written back');
+    ok($write_ok,    'Case-015-07: upd-prj02-test-003 file successfully written back');
 }
 
 {
@@ -395,15 +395,15 @@ preparations();
 
     my $write_ok = write_file($filename, {err_mode => 'quiet'}, \$content);
 
-    is($nbl_bef, 35, 'upd-prj02-exmp-005: no of lines before update');
+    is($nbl_bef, 35, 'Case-016-01: upd-prj02-exmp-005 no of lines before update');
 
-    is($chg01, 1,    'upd-prj02-exmp-005: two subsequent lines deleted');
-    is($chg02, 1,    'upd-prj02-exmp-005: five lines inserted');
-    is($chg03, 1,    'upd-prj02-exmp-005: one line modified');
+    is($chg01, 1,    'Case-016-02: upd-prj02-exmp-005 two subsequent lines deleted');
+    is($chg02, 1,    'Case-016-03: upd-prj02-exmp-005 five lines inserted');
+    is($chg03, 1,    'Case-016-04: upd-prj02-exmp-005 one line modified');
 
-    is($nbl_aft,  38,'upd-prj02-exmp-005: no of lines after update');
+    is($nbl_aft,  38,'Case-016-05: upd-prj02-exmp-005 no of lines after update');
 
-    ok($write_ok,    'upd-prj02-exmp-005: file successfully written back');
+    ok($write_ok,    'Case-016-06: upd-prj02-exmp-005 file successfully written back');
 }
 
 # applying Prj_02 (while Prj_01 is still active) must fail:
@@ -414,8 +414,8 @@ preparations();
       File::Spec->catdir($mpath, 'vc_apply.pl'),
     );
 
-    ok($rc != 0,                                'co-prj02-apfail: rc is not zero');
-    like($stderr, qr{already \s active}xms,     'co-prj02-apfail: STDERR contains >>...already active...<<');
+    ok($rc != 0,                                'Case-017-01: co-prj02-apfail rc is not zero');
+    like($stderr, qr{already \s active}xms,     'Case-017-01: co-prj02-apfail STDERR contains >>...already active...<<');
 }
 
 # resetting projects:
@@ -426,8 +426,8 @@ preparations();
       File::Spec->catdir($mpath, 'vc_reset.pl'),
     );
 
-    is($rc, 0,                                  'co-prj02-reset: rc is zero');
-    is($stderr, '',                             'co-prj02-reset: check STDERR');
+    is($rc, 0,                                  'Case-018-01: co-prj02-reset rc is zero');
+    is($stderr, '',                             'Case-018-02: co-prj02-reset check STDERR');
 }
 
 
@@ -451,14 +451,14 @@ preparations();
     my $act_test = $stdout =~ m{F_test-003_Z001\.txt    \s+ (\w+ \s+ --I=\d+/D=\d+--> \s+ \w+)}xms ? $1 : '?';
     my $act_exmp = $stdout =~ m{F_example-005_Z001\.txt \s+ (\w+ \s+ --I=\d+/D=\d+--> \s+ \w+)}xms ? $1 : '?';
 
-    is($act_test, 'WRK --I=0006/D=0004--> ORG', 'co-prj02-apply: message >>test<<');
-    is($act_exmp, 'WRK --I=0006/D=0003--> ORG', 'co-prj02-apply: message >>exmp<<');
-    is($rc, 0,                                  'co-prj02-apply: rc is zero');
-    is($stderr, '',                             'co-prj02-apply: check STDERR');
-    is($nbl_test_bef, 35,                       'co-prj02-apply: nb lines >>test<< before');
-    is($nbl_exmp_bef, 35,                       'co-prj02-apply: nb lines >>exmp<< before');
-    is($nbl_test_aft, 37,                       'co-prj02-apply: nb lines >>test<< after');
-    is($nbl_exmp_aft, 38,                       'co-prj02-apply: nb lines >>exmp<< after');
+    is($act_test, 'WRK --I=0006/D=0004--> ORG', 'Case-019-01: co-prj02-apply message >>test<<');
+    is($act_exmp, 'WRK --I=0006/D=0003--> ORG', 'Case-019-02: co-prj02-apply message >>exmp<<');
+    is($rc, 0,                                  'Case-019-03: co-prj02-apply rc is zero');
+    is($stderr, '',                             'Case-019-04: co-prj02-apply check STDERR');
+    is($nbl_test_bef, 35,                       'Case-019-05: co-prj02-apply nb lines >>test<< before');
+    is($nbl_exmp_bef, 35,                       'Case-019-06: co-prj02-apply nb lines >>exmp<< before');
+    is($nbl_test_aft, 37,                       'Case-019-07: co-prj02-apply nb lines >>test<< after');
+    is($nbl_exmp_aft, 38,                       'Case-019-08: co-prj02-apply nb lines >>exmp<< after');
 }
 
 # Checking no changes:
@@ -475,9 +475,9 @@ preparations();
     my $nbl_exp4 = do{ my $content = read_file($fn_exp4, err_mode => 'quiet') // '?'; my $nb = () = $content =~ m{(\n)}xmsg; $nb; };
     my $nbl_exp5 = do{ my $content = read_file($fn_exp5, err_mode => 'quiet') // '?'; my $nb = () = $content =~ m{(\n)}xmsg; $nb; };
 
-    is($nbl_tst3, 35, 'reset: nb lines >>test-003<<');
-    is($nbl_exp4, 35, 'reset: nb lines >>example-004<<');
-    is($nbl_exp5, 35, 'reset: nb lines >>example-005<<');
+    is($nbl_tst3, 35, 'Case-020-01: reset nb lines >>test-003<<');
+    is($nbl_exp4, 35, 'Case-020-02: reset nb lines >>example-004<<');
+    is($nbl_exp5, 35, 'Case-020-03: reset nb lines >>example-005<<');
 }
 
 # Checking changes in Prj_01:
@@ -501,11 +501,11 @@ preparations();
     my $nbl_exp4 = do{ my $content = read_file($fn_exp4, err_mode => 'quiet') // '?'; my $nb = () = $content =~ m{(\n)}xmsg; $nb; };
     my $nbl_exp5 = do{ my $content = read_file($fn_exp5, err_mode => 'quiet') // '?'; my $nb = () = $content =~ m{(\n)}xmsg; $nb; };
 
-    is($nbl_tst3, 34, 'apply-prj1a: nb lines >>test-003<<');
-    is($nbl_exp4, 34, 'apply-prj1a: nb lines >>example-004<<');
-    is($nbl_exp5, 35, 'apply-prj1a: nb lines >>example-005<<');
-    is($chg, 1,       'apply-prj1a: modification after apply - one line has been modified');
-    ok($write_ok,     'apply-prj1a: modification after apply - file successfully written back');
+    is($nbl_tst3, 34, 'Case-021-01: apply-prj1a nb lines >>test-003<<');
+    is($nbl_exp4, 34, 'Case-021-02: apply-prj1a nb lines >>example-004<<');
+    is($nbl_exp5, 35, 'Case-021-03: apply-prj1a nb lines >>example-005<<');
+    is($chg, 1,       'Case-021-04: apply-prj1a modification after apply - one line has been modified');
+    ok($write_ok,     'Case-021-05: apply-prj1a modification after apply - file successfully written back');
 }
 
 {
@@ -563,16 +563,16 @@ preparations();
       WRK->ORG: \s+ > \s+ Line \s+ >>mod \s+ zzz<< \s+ ctr=0020 \s+
     }xms;
 
-    is($rc, 0,             'status-prj1a: rc is zero');
-    is($stderr, '',        'status-prj1a: stderr is empty');
-    like($stdout, $hunk01, 'status-prj1a: stdout find hunk01');
-    like($stdout, $hunk02, 'status-prj1a: stdout find hunk02');
-    like($stdout, $hunk03, 'status-prj1a: stdout find hunk03');
-    like($stdout, $hunk04, 'status-prj1a: stdout find hunk04');
-    like($stdout, $hunk05, 'status-prj1a: stdout find hunk05');
-    like($stdout, $hunk06, 'status-prj1a: stdout find hunk06');
-    like($stdout, $hunk07, 'status-prj1a: stdout find hunk07');
-    like($stdout, $hunk08, 'status-prj1a: stdout find hunk08');
+    is($rc, 0,             'Case-022-01: status-prj1a rc is zero');
+    is($stderr, '',        'Case-022-02: status-prj1a stderr is empty');
+    like($stdout, $hunk01, 'Case-022-03: status-prj1a stdout find hunk01');
+    like($stdout, $hunk02, 'Case-022-04: status-prj1a stdout find hunk02');
+    like($stdout, $hunk03, 'Case-022-05: status-prj1a stdout find hunk03');
+    like($stdout, $hunk04, 'Case-022-06: status-prj1a stdout find hunk04');
+    like($stdout, $hunk05, 'Case-022-07: status-prj1a stdout find hunk05');
+    like($stdout, $hunk06, 'Case-022-08: status-prj1a stdout find hunk06');
+    like($stdout, $hunk07, 'Case-022-09: status-prj1a stdout find hunk07');
+    like($stdout, $hunk08, 'Case-022-10: status-prj1a stdout find hunk08');
 }
 
 # verify output of vc_status -c
@@ -592,11 +592,11 @@ preparations();
     my $h_arcwrk = () = $stdout =~ m{(^ ARC->WRK: \s \d)}xmsg;
     my $h_wrkorg = () = $stdout =~ m{(^ WRK->ORG: \s \d)}xmsg;
 
-    is($rc, 0,             'status-prj1b: rc is zero');
-    is($stderr, '',        'status-prj1b: stderr is empty');
-    like($stdout, $hunk01, 'status-prj1b: stdout find hunk01');
-    is($h_arcwrk, 7,       'status-prj1b: number of hunks ARC->WRK');
-    is($h_wrkorg, 1,       'status-prj1b: number of hunks WRK->ORG');
+    is($rc, 0,             'Case-023-01: status-prj1b rc is zero');
+    is($stderr, '',        'Case-023-02: status-prj1b stderr is empty');
+    like($stdout, $hunk01, 'Case-023-03: status-prj1b stdout find hunk01');
+    is($h_arcwrk, 7,       'Case-023-04: status-prj1b number of hunks ARC->WRK');
+    is($h_wrkorg, 1,       'Case-023-05: status-prj1b number of hunks WRK->ORG');
 }
 
 # Checking changes in Prj_02:
@@ -620,11 +620,11 @@ preparations();
     my $nbl_exp4 = do{ my $content = read_file($fn_exp4, err_mode => 'quiet') // '?'; my $nb = () = $content =~ m{(\n)}xmsg; $nb; };
     my $nbl_exp5 = do{ my $content = read_file($fn_exp5, err_mode => 'quiet') // '?'; my $nb = () = $content =~ m{(\n)}xmsg; $nb; };
 
-    is($nbl_tst3, 37, 'apply-prj2: nb lines >>test-003<<');
-    is($nbl_exp4, 35, 'apply-prj2: nb lines >>example-004<<');
-    is($nbl_exp5, 38, 'apply-prj2: nb lines >>example-005<<');
-    is($chg, 1,       'apply-prj2: modification after apply - one line has been modified');
-    ok($write_ok,     'apply-prj2: modification after apply - file successfully written back');
+    is($nbl_tst3, 37, 'Case-024-01: apply-prj2 nb lines >>test-003<<');
+    is($nbl_exp4, 35, 'Case-024-02: apply-prj2 nb lines >>example-004<<');
+    is($nbl_exp5, 38, 'Case-024-03: apply-prj2 nb lines >>example-005<<');
+    is($chg, 1,       'Case-024-04: apply-prj2 modification after apply - one line has been modified');
+    ok($write_ok,     'Case-024-05: apply-prj2 modification after apply - file successfully written back');
 }
 
 {
@@ -675,14 +675,14 @@ preparations();
       WRK->ORG: \s+ > \s+ yyy<< \s+ ctr=0022 \s+
     }xms;
 
-    is($rc, 0,             'status-prj2: rc is zero');
-    is($stderr, '',        'status-prj2: stderr is empty');
-    like($stdout, $hunk01, 'status-prj2: stdout find hunk01');
-    like($stdout, $hunk02, 'status-prj2: stdout find hunk02');
-    like($stdout, $hunk03, 'status-prj2: stdout find hunk03');
-    like($stdout, $hunk04, 'status-prj2: stdout find hunk04');
-    like($stdout, $hunk05, 'status-prj2: stdout find hunk05');
-    like($stdout, $hunk06, 'status-prj2: stdout find hunk06');
+    is($rc, 0,             'Case-025-01: status-prj2 rc is zero');
+    is($stderr, '',        'Case-025-02: status-prj2 stderr is empty');
+    like($stdout, $hunk01, 'Case-025-03: status-prj2 stdout find hunk01');
+    like($stdout, $hunk02, 'Case-025-04: status-prj2 stdout find hunk02');
+    like($stdout, $hunk03, 'Case-025-05: status-prj2 stdout find hunk03');
+    like($stdout, $hunk04, 'Case-025-06: status-prj2 stdout find hunk04');
+    like($stdout, $hunk05, 'Case-025-07: status-prj2 stdout find hunk05');
+    like($stdout, $hunk06, 'Case-025-08: status-prj2 stdout find hunk06');
 }
 
 # additional check to verify that option -u does *not* show the lines '---' and '+++'
@@ -696,13 +696,13 @@ preparations();
     my ($f_name, $f_ins, $f_del) =
       $stdout =~ m{^ \s* \[ \s+ 1/ \s+ 2] \s+ (\S+) \s+ ARC \s+ --I= (\d+) / D= (\d+) -->}xms ? ($1, $2 + 0, $3 + 0) : ('', 0, 0);
 
-    is($rc, 0,                            'status-prj2-u: rc is zero');
-    is($stderr, '',                       'status-prj2-u: stderr is empty');
-    unlike($stdout, qr{\s --- \s}xms,     'status-prj2-u: there is no ---');
-    unlike($stdout, qr{\s \+\+\+ \s}xms,  'status-prj2-u: there is no +++');
-    is($f_name, 'F_example-005_Z001.txt', 'status-prj2-u: name for [1/2]');
-    is($f_ins, 6,                         'status-prj2-u: inserted for [1/2]');
-    is($f_del, 3,                         'status-prj2-u: deleted for [1/2]');
+    is($rc, 0,                            'Case-026-01: status-prj2-u rc is zero');
+    is($stderr, '',                       'Case-026-02: status-prj2-u stderr is empty');
+    unlike($stdout, qr{\s --- \s}xms,     'Case-026-03: status-prj2-u there is no ---');
+    unlike($stdout, qr{\s \+\+\+ \s}xms,  'Case-026-04: status-prj2-u there is no +++');
+    is($f_name, 'F_example-005_Z001.txt', 'Case-026-05: status-prj2-u name for [1/2]');
+    is($f_ins, 6,                         'Case-026-06: status-prj2-u inserted for [1/2]');
+    is($f_del, 3,                         'Case-026-07: status-prj2-u deleted for [1/2]');
 }
 
 # General list
@@ -727,11 +727,11 @@ preparations();
   [ ]+ => [ ]+ Prj_02 [ ]+ ----> [ ]+ F_example-005_Z001\.txt [^\n]* \n
     }xms;
 
-    is($rc, 0,             'list-detail: rc is zero');
-    is($stderr, '',        'list-detail: stderr is empty');
-    like($stdout, $line01, 'list-detail: stdout find line01');
-    like($stdout, $line02, 'list-detail: stdout find line02');
-    like($stdout, $line03, 'list-detail: stdout find line03');
+    is($rc, 0,             'Case-027-01: list-detail rc is zero');
+    is($stderr, '',        'Case-027-02: list-detail stderr is empty');
+    like($stdout, $line01, 'Case-027-03: list-detail stdout find line01');
+    like($stdout, $line02, 'Case-027-04: list-detail stdout find line02');
+    like($stdout, $line03, 'Case-027-05: list-detail stdout find line03');
 }
 
 # Testing vc_merge
@@ -754,10 +754,10 @@ preparations();
       d \s+  2 \s+ => \s+ the`years`’82`and`’90,`I`am`faced`by ~\\ \s+
     }xms;
 
-    is($rc, 0,              'vc_merge_01: rc is zero');
-    like($stdout, $verif01, 'vc_merge_01: stdout verification 01');
-    like($stdout, $verif02, 'vc_merge_01: stdout verification 02');
-    is($stderr, '',         'vc_merge_01: stderr is empty');
+    is($rc, 0,              'Case-028-01: vc_merge_01 rc is zero');
+    like($stdout, $verif01, 'Case-028-02: vc_merge_01 stdout verification 01');
+    like($stdout, $verif02, 'Case-028-03: vc_merge_01 stdout verification 02');
+    is($stderr, '',         'Case-028-04: vc_merge_01 stderr is empty');
 }
 
 {
@@ -771,9 +771,9 @@ preparations();
 
     my $verif01 = qr{There \s+ are \s+ 2 \s+ hunks}xms;
 
-    is($rc, 0,              'vc_merge_02: rc is zero');
-    like($stdout, $verif01, 'vc_merge_02: stdout verification 01');
-    is($stderr, '',         'vc_merge_02: stderr is empty');
+    is($rc, 0,              'Case-029-01: vc_merge_02 rc is zero');
+    like($stdout, $verif01, 'Case-029-02: vc_merge_02 stdout verification 01');
+    is($stderr, '',         'Case-029-03: vc_merge_02 stderr is empty');
 }
 
 {
@@ -792,9 +792,9 @@ preparations();
       d \s+ 7 \s+ => \s+ gained`publicity~\[126\]through~\[96\]the~\[9\]papers,~\[23\]and ~\\ \s+
     }xms;
 
-    is($rc, 0,              'vc_merge_03: rc is zero');
-    like($stdout, $verif01, 'vc_merge_03: stdout verification 01');
-    is($stderr, '',         'vc_merge_03: stderr is empty');
+    is($rc, 0,              'Case-030-01: vc_merge_03 rc is zero');
+    like($stdout, $verif01, 'Case-030-02: vc_merge_03 stdout verification 01');
+    is($stderr, '',         'Case-030-03: vc_merge_03 stderr is empty');
 }
 
 {
@@ -825,9 +825,9 @@ preparations();
       d \s+ 6 \s+ => \s+ to`leave\.`Some,`however,`\.\.\.and`here`come \s+
     }xms;
 
-    is($rc, 0,              'vc_merge_04: rc is zero');
-    like($stdout, $verif01, 'vc_merge_04: stdout verification 01');
-    is($stderr, '',         'vc_merge_04: stderr is empty');
+    is($rc, 0,              'Case-031-01: vc_merge_04 rc is zero');
+    like($stdout, $verif01, 'Case-031-02: vc_merge_04 stdout verification 01');
+    is($stderr, '',         'Case-031-03: vc_merge_04 stderr is empty');
 }
 
 {
@@ -843,10 +843,10 @@ preparations();
 
     my $content = read_file($out_file, err_mode => 'quiet') // '?';
 
-    is($rc, 0,                                              'vc_merge_05: rc is zero');
-    like($stdout, qr{Output \s successfully \s written}xms, 'vc_merge_05: stdout shows success');
-    is($stderr, '',                                         'vc_merge_05: stderr is empty');
-    like($content, qr{behind \s ----- \s the}xms,           'vc_merge_05: modification has been made');
+    is($rc, 0,                                              'Case-032-01: vc_merge_05 rc is zero');
+    like($stdout, qr{Output \s successfully \s written}xms, 'Case-032-02: vc_merge_05 stdout shows success');
+    is($stderr, '',                                         'Case-032-03: vc_merge_05 stderr is empty');
+    like($content, qr{behind \s ----- \s the}xms,           'Case-032-04: vc_merge_05 modification has been made');
 }
 
 {
@@ -862,10 +862,10 @@ preparations();
 
     my $content = read_file($out_file, err_mode => 'quiet') // '?';
 
-    ok($rc != 0,                                      'vc_merge_06: rc is not zero');
-    like($stdout, qr{There \s are \s 1 \s hunks}xms,  'vc_merge_06: stdout shows 1 hunk');
-    like($stderr, qr{Conflict \s in \s hunk \s 1}xms, 'vc_merge_06: stderr shows conflict');
-    is($content, '?',                                 'vc_merge_06: no output was written');
+    ok($rc != 0,                                      'Case-033-01: vc_merge_06 rc is not zero');
+    like($stdout, qr{There \s are \s 1 \s hunks}xms,  'Case-033-02: vc_merge_06 stdout shows 1 hunk');
+    like($stderr, qr{Conflict \s in \s hunk \s 1}xms, 'Case-033-03: vc_merge_06 stderr shows conflict');
+    is($content, '?',                                 'Case-033-04: vc_merge_06 no output was written');
 }
 
 # successfully checking out 2 files ('test-002.txt' and 'test-003.txt') in Prj_03 via
@@ -888,9 +888,9 @@ preparations();
       qq{</checkout>\n},
     );
 
-    ok( -e File::Spec->catdir('Work', 'B_Flist.xml'),         'test v0.04-001: initially B_Flist.xml does exist under Work/');
-    ok(!-e File::Spec->catdir('Work', 'F_test-002_Z001.txt'), 'test v0.04-001: initially F_test-002_Z001.txt does not exist under Work/');
-    ok(!-e File::Spec->catdir('Work', 'F_test-003_Z001.txt'), 'test v0.04-001: initially F_test-003_Z001.txt does not exist under Work/');
+    ok( -e File::Spec->catdir('Work', 'B_Flist.xml'),         'Case-034-01: initially B_Flist.xml does exist under Work/');
+    ok(!-e File::Spec->catdir('Work', 'F_test-002_Z001.txt'), 'Case-034-02: initially F_test-002_Z001.txt does not exist under Work/');
+    ok(!-e File::Spec->catdir('Work', 'F_test-003_Z001.txt'), 'Case-034-03: initially F_test-003_Z001.txt does not exist under Work/');
 }
 
 {
@@ -898,15 +898,15 @@ preparations();
       File::Spec->catdir($mpath, 'vc_checkout.pl'),
     );
 
-    ok(-e File::Spec->catdir('Work', 'F_test-002_Z001.txt'), 'test v0.04-002: after first co F_test-002_Z001.txt exists under Work/');
-    ok(-e File::Spec->catdir('Work', 'F_test-003_Z001.txt'), 'test v0.04-002: after first co F_test-003_Z001.txt exists under Work/');
+    ok(-e File::Spec->catdir('Work', 'F_test-002_Z001.txt'), 'Case-035-01: after first co F_test-002_Z001.txt exists under Work/');
+    ok(-e File::Spec->catdir('Work', 'F_test-003_Z001.txt'), 'Case-035-02: after first co F_test-003_Z001.txt exists under Work/');
 
     like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 2\] \s \*\* \s \S+ \s \*\* \s F_test-002_Z \d{3} \.txt \s}xms,
-                                                              'test v0.04-002: stdout contains first co message test-002');
+                                                              'Case-035-03: stdout contains first co message test-002');
     like($stdout, qr{^ Ckout \s \[ \s+ 2/ \s+ 2\] \s \*\* \s \S+ \s \*\* \s F_test-003_Z \d{3} \.txt \s}xms,
-                                                              'test v0.04-002: stdout contains first co message test-003');
-    is($rc, 0,                                                'test v0.04-002: first co rc is zero');
-    is($stderr, '',                                           'test v0.04-002: first co stderr is empty');
+                                                              'Case-035-04: stdout contains first co message test-003');
+    is($rc, 0,                                                'Case-035-05: first co rc is zero');
+    is($stderr, '',                                           'Case-035-06: first co stderr is empty');
 }
 
 {
@@ -921,17 +921,17 @@ preparations();
       File::Spec->catdir($mpath, 'vc_checkout.pl'),
     );
 
-    ok( -e File::Spec->catdir('Work', 'F_test-002_Z001.txt'), 'test v0.04-003: after second co F_test-002_Z001.txt still exists under Work/');
-    ok(!-e File::Spec->catdir('Work', 'F_test-002_Z002.txt'), 'test v0.04-003: after second co F_test-002_Z002.txt does not exist in Work/');
-    ok(!-e File::Spec->catdir('Work', 'F_test-002_Z003.txt'), 'test v0.04-003: after second co F_test-002_Z003.txt does not exist in Work/');
-    ok( -e File::Spec->catdir('Work', 'F_test-003_Z001.txt'), 'test v0.04-003: after second co F_test-003_Z001.txt still exists under Work/');
+    ok( -e File::Spec->catdir('Work', 'F_test-002_Z001.txt'), 'Case-036-01: after second co F_test-002_Z001.txt still exists under Work/');
+    ok(!-e File::Spec->catdir('Work', 'F_test-002_Z002.txt'), 'Case-036-02: after second co F_test-002_Z002.txt does not exist in Work/');
+    ok(!-e File::Spec->catdir('Work', 'F_test-002_Z003.txt'), 'Case-036-03: after second co F_test-002_Z003.txt does not exist in Work/');
+    ok( -e File::Spec->catdir('Work', 'F_test-003_Z001.txt'), 'Case-036-04: after second co F_test-003_Z001.txt still exists under Work/');
 
     like($stdout, qr{^ Alert \s \[ \s+ 0/ \s+ 0\] \s+ -- \s+ Alert \s+ -- \s+ F_test-002_Z001\.txt \s}xms,
-                                                              'test v0.04-003: stdout contains clean up message for test-002Z001');
+                                                              'Case-036-05: stdout contains clean up message for test-002Z001');
     like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 1\] \s+ F_test-003_Z \d{3} \.txt \s}xms,
-                                                              'test v0.04-003: stdout contains second co message test-003');
-    is($rc, 0,                                                'test v0.04-003: first co rc is zero');
-    is($stderr, '',                                           'test v0.04-003: first co stderr is empty');
+                                                              'Case-036-06: stdout contains second co message test-003');
+    is($rc, 0,                                                'Case-036-07: first co rc is zero');
+    is($stderr, '',                                           'Case-036-08: first co stderr is empty');
 }
 
 {
@@ -947,17 +947,17 @@ preparations();
       File::Spec->catdir($mpath, 'vc_checkout.pl'),
     );
 
-    ok( -e File::Spec->catdir('Work', 'F_test-002_Z001.txt'), 'test v0.04-004: after second co F_test-002_Z001.txt still exists under Work/');
-    ok( -e File::Spec->catdir('Work', 'F_test-002_Z002.txt'), 'test v0.04-004: after second co F_test-002_Z002.txt still exists under Work/');
-    ok(!-e File::Spec->catdir('Work', 'F_test-002_Z003.txt'), 'test v0.04-004: after second co F_test-002_Z003.txt does not exist in Work/');
-    ok( -e File::Spec->catdir('Work', 'F_test-003_Z001.txt'), 'test v0.04-004: after second co F_test-003_Z001.txt still exists under Work/');
+    ok( -e File::Spec->catdir('Work', 'F_test-002_Z001.txt'), 'Case-037-01: after second co F_test-002_Z001.txt still exists under Work/');
+    ok( -e File::Spec->catdir('Work', 'F_test-002_Z002.txt'), 'Case-037-02: after second co F_test-002_Z002.txt still exists under Work/');
+    ok(!-e File::Spec->catdir('Work', 'F_test-002_Z003.txt'), 'Case-037-03: after second co F_test-002_Z003.txt does not exist in Work/');
+    ok( -e File::Spec->catdir('Work', 'F_test-003_Z001.txt'), 'Case-037-04: after second co F_test-003_Z001.txt still exists under Work/');
 
     like($stdout, qr{^ Alert \s \[ \s+ 0/ \s+ 0\] \s+ -- \s+ Alert \s+ -- \s+ F_test-002_Z001\.txt \s}xms,
-                                                              'test v0.04-004: stdout contains clean up message for test-002Z001');
+                                                              'Case-037-05: stdout contains clean up message for test-002Z001');
     like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 2\] \s+ \*\* \s+ Write \s+ \*\* \s+ F_test-002_Z002\.txt \s}xms,
-                                                              'test v0.04-004: stdout contains second co message test-002');
-    is($rc, 0,                                                'test v0.04-004: first co rc is zero');
-    is($stderr, '',                                           'test v0.04-004: first co stderr is empty');
+                                                              'Case-037-06: stdout contains second co message test-002');
+    is($rc, 0,                                                'Case-037-07: first co rc is zero');
+    is($stderr, '',                                           'Case-037-08: first co stderr is empty');
 }
 
 {
@@ -977,11 +977,67 @@ preparations();
       File::Spec->catdir($mpath, 'vc_checkout.pl'),
     );
 
-    ok(-e File::Spec->catdir('Work', 'F_dummy_Z001.txt'),  'test v0.04-099: file Work/F_dummy_Z001.txt still exists');
-    ok(-e File::Spec->catdir('Work', 'YY_Dummy_Z002.txt'), 'test v0.04-099: file Work/YY_Dummy_Z002.txt still exists');
+    ok(-e File::Spec->catdir('Work', 'F_dummy_Z001.txt'),  'Case-038-01: file Work/F_dummy_Z001.txt still exists');
+    ok(-e File::Spec->catdir('Work', 'YY_Dummy_Z002.txt'), 'Case-038-02: file Work/YY_Dummy_Z002.txt still exists');
 
-    is($rc, 0,                                             'test v0.04-099: co rc is zero');
+    is($rc, 0,                                             'Case-038-03: co rc is zero');
 
+}
+
+{
+    my ($stdout, $stderr, $rc) = my_system($^X,
+      File::Spec->catdir($mpath, 'vc_reset.pl'),
+    );
+
+    is($rc, 0,                                                'Case-039-01: reset -- rc is zero');
+    is($stderr, '',                                           'Case-039-02: reset -- stderr is empty');
+}
+
+{
+    my $t3_content = substr(read_file(File::Spec->catdir($tempdir, 'Data_01', 'test-003.txt')), 0, 3);
+
+    is($t3_content, 'Lin',                                    'Case-039-03: old content still exists in test-003.txt');
+
+    # overwrite with some new information into 'F_test-003_Z001.txt':
+    write_file(File::Spec->catdir('Work', 'F_test-003_Z001.txt'), q{ABCDEFG});
+
+    my ($stdout, $stderr, $rc) = my_system($^X,
+      File::Spec->catdir($mpath, 'vc_apply.pl'),
+    );
+
+    like($stdout, qr{^ Apply \s+ \[ \s+  2/ \s+  2\] \s+ F_test-003_Z001\.txt \s+ WRK \s+ --I=0001/D= \d+ -->}xms, 
+                                                              'Case-039-04: apply -- stdout contains F_test-003_Z001.txt');
+    is($rc, 0,                                                'Case-039-05: apply -- rc is zero');
+    is($stderr, '',                                           'Case-039-06: apply -- stderr is empty');
+}
+
+{
+    my $t3_content = substr(read_file(File::Spec->catdir($tempdir, 'Data_01', 'test-003.txt')), 0, 3);
+
+    is($t3_content, 'ABC', 'Case-040-01: now there is new content in test-003.txt');
+
+    # remove all files from 'B_Flist.xml'
+    write_file(File::Spec->catdir($tempdir, 'Prj_03', 'Work', 'B_Flist.xml'),
+      qq{<?xml version="1.0" encoding="iso-8859-1"?>\n},
+      qq{<checkout>\n},
+      qq{</checkout>\n},
+    );
+
+    my ($stdout, $stderr, $rc) = my_system($^X,
+      File::Spec->catdir($mpath, 'vc_checkout.pl'),
+    );
+
+    like($stdout, qr{Clear \s+ -- \s+ F_test-002_Z002\.txt \s}xms, 'Case-040-02: checkout -- stdout contains Clear -- F_test-002_Z002.txt');
+    like($stdout, qr{Wipe  \s+ -- \s+ F_test-002_Z002\.txt \s}xms, 'Case-040-03: checkout -- stdout contains Wipe  -- F_test-002_Z002.txt');
+    like($stdout, qr{Clear \s+ -- \s+ F_test-003_Z001\.txt \s}xms, 'Case-040-04: checkout -- stdout contains Clear -- F_test-003_Z001.txt');
+    is($rc, 0,                                                     'Case-040-05: checkout -- rc is zero');
+    is($stderr, '',                                                'Case-040-06: checkout -- stderr is empty');
+}
+
+{
+    my $t3_content = substr(read_file(File::Spec->catdir($tempdir, 'Data_01', 'test-003.txt')), 0, 3);
+
+    is($t3_content, 'Lin', 'Case-041-01: old content has been restored in test-003.txt');
 }
 
 # ****************************
