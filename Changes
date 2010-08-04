@@ -49,3 +49,6 @@ Revision history for File-Vctools
         add housekeeping to 'vc-checkout.pl' (clean up after a file has been removed from
         'B-Flist.xml')
         reformat and renumber testcases in 't/0010-test.t'
+
+0.07    04 Aug 2010
+        Add "EXE_FILES => [ 'bin/vc_apply.pl', 'bin/vc_checkout.pl', ... ] to Makefile.PL
