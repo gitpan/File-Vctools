@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use 5.010;
 
-use Test::More tests => 250;
+use Test::More tests => 283;
 
 use File::Vctools qw(get_mpath get_difftool);
 use Cwd;
@@ -146,7 +146,7 @@ preparations();
 
 {
     my $dir = File::Spec->catdir($tempdir, 'Prj_03');
-    chdir $dir or die "Error-0022: Can't chdir '$dir' because $!";
+    chdir $dir or die "Error-0030: Can't chdir '$dir' because $!";
 
     my ($stdout, $stderr, $rc) = my_system($^X, File::Spec->catdir($mpath, 'vc_init.pl'));
 
@@ -176,12 +176,48 @@ preparations();
     ok(-f File::Spec->catfile('Cmd', 'r_status.pl'),    'Case-005-22: init-prj03 file "r_status.pl"    actually exists');
 }
 
+# initialising Prj_04:
+# ********************
+
+{
+    my $dir = File::Spec->catdir($tempdir, 'Prj_04');
+    chdir $dir or die "Error-0040: Can't chdir '$dir' because $!";
+
+    my ($stdout, $stderr, $rc) = my_system($^X, File::Spec->catdir($mpath, 'vc_init.pl'));
+
+    is($rc, 0,                                          'Case-006-01: init-prj04 rc is zero');
+    is($stderr, '',                                     'Case-006-02: init-prj04 stderr is empty');
+
+    like($stdout, qr{==> \s a_Prj_04\.txt   \s}xms,     'Case-006-03: init-prj04 stdout contains "a_Prj_04.txt"');
+    like($stdout, qr{==> \s r_apply\.pl     \s}xms,     'Case-006-04: init-prj04 stdout contains "r_apply.pl"');
+    like($stdout, qr{==> \s r_checkout\.pl  \s}xms,     'Case-006-05: init-prj04 stdout contains "r_checkout.pl"');
+    like($stdout, qr{==> \s r_list_det\.pl  \s}xms,     'Case-006-06: init-prj04 stdout contains "r_list_det.pl"');
+    like($stdout, qr{==> \s r_list_file\.pl \s}xms,     'Case-006-07: init-prj04 stdout contains "r_list_file.pl"');
+    like($stdout, qr{==> \s r_list_proj\.pl \s}xms,     'Case-006-08: init-prj04 stdout contains "r_list_proj.pl"');
+    like($stdout, qr{==> \s r_renew\.pl     \s}xms,     'Case-006-09: init-prj04 stdout contains "r_renew.pl"');
+    like($stdout, qr{==> \s r_reset\.pl     \s}xms,     'Case-006-10: init-prj04 stdout contains "r_reset.pl"');
+    like($stdout, qr{==> \s r_statdiff\.pl  \s}xms,     'Case-006-11: init-prj04 stdout contains "r_statdiff.pl"');
+    like($stdout, qr{==> \s r_status\.pl    \s}xms,     'Case-006-12: init-prj04 stdout contains "r_status.pl"');
+
+    ok(-f File::Spec->catfile('Cmd', 'a_Prj_04.txt'),   'Case-006-13: init-prj04 file "a_Prj_04.txt"   actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_apply.pl'),     'Case-006-14: init-prj04 file "r_apply.pl"     actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_checkout.pl'),  'Case-006-15: init-prj04 file "r_checkout.pl"  actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_list_det.pl'),  'Case-006-16: init-prj04 file "r_list_det.pl"  actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_list_file.pl'), 'Case-006-17: init-prj04 file "r_list_file.pl" actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_list_proj.pl'), 'Case-006-18: init-prj04 file "r_list_proj.pl" actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_renew.pl'),     'Case-006-19: init-prj04 file "r_renew.pl"     actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_reset.pl'),     'Case-006-20: init-prj04 file "r_reset.pl"     actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_statdiff.pl'),  'Case-006-21: init-prj04 file "r_statdiff.pl"  actually exists');
+    ok(-f File::Spec->catfile('Cmd', 'r_status.pl'),    'Case-006-22: init-prj04 file "r_status.pl"    actually exists');
+}
+
+
 # successfully checking out 2 files in Prj_01 (plus 1 checkout of a non-existent file):
 # *************************************************************************************
 
 {
     my $dir = File::Spec->catdir($tempdir, 'Prj_01');
-    chdir $dir or die "Error-0030: Can't chdir '$dir' because $!";
+    chdir $dir or die "Error-0050: Can't chdir '$dir' because $!";
 }
 
 {
@@ -190,10 +226,10 @@ preparations();
       File::Spec->catdir($tempdir, 'Data_01', 'test-003.txt'),
     );
 
-    ok(-e File::Spec->catdir('Work', 'F_test-003_Z001.txt'),                                                     'Case-006-01: co-prj01-test-003 checked-out file does actually exist under Work/');
-    like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 1\] \s \*\* \s \S+ \s \*\* \s F_test-003_Z \d{3} \.txt \s}xms,     'Case-006-02: co-prj01-test-003 stdout contains checkout message');
-    is($rc, 0,                                                                                                   'Case-006-03: co-prj01-test-003 rc is zero');
-    is($stderr, '',                                                                                              'Case-006-04: co-prj01-test-003 stderr is empty');
+    ok(-e File::Spec->catdir('Work', 'F_test-003_Z001.txt'),                                                     'Case-008-01: co-prj01-test-003 checked-out file does actually exist under Work/');
+    like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 1\] \s \*\* \s \S+ \s \*\* \s F_test-003_Z \d{3} \.txt \s}xms,     'Case-008-02: co-prj01-test-003 stdout contains checkout message');
+    is($rc, 0,                                                                                                   'Case-008-03: co-prj01-test-003 rc is zero');
+    is($stderr, '',                                                                                              'Case-008-04: co-prj01-test-003 stderr is empty');
 }
 
 {
@@ -202,10 +238,10 @@ preparations();
       File::Spec->catdir($tempdir, 'Data_02', 'example-004.txt'),
     );
 
-    ok(-e File::Spec->catdir('Work', 'F_example-004_Z001.txt'),                                                  'Case-007-01: co-prj01-exmp-004 checked-out file does actually exist under Work/');
-    like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 1\] \s \*\* \s \S+ \s \*\* \s F_example-004_Z \d{3} \.txt \s}xms,  'Case-007-02: co-prj01-exmp-004 stdout contains checkout message');
-    is($rc, 0,                                                                                                   'Case-007-03: co-prj01-exmp-004 rc is zero');
-    is($stderr, '',                                                                                              'Case-007-04: co-prj01-exmp-004 stderr is empty');
+    ok(-e File::Spec->catdir('Work', 'F_example-004_Z001.txt'),                                                  'Case-008-05: co-prj01-exmp-004 checked-out file does actually exist under Work/');
+    like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 1\] \s \*\* \s \S+ \s \*\* \s F_example-004_Z \d{3} \.txt \s}xms,  'Case-008-06: co-prj01-exmp-004 stdout contains checkout message');
+    is($rc, 0,                                                                                                   'Case-008-07: co-prj01-exmp-004 rc is zero');
+    is($stderr, '',                                                                                              'Case-008-08: co-prj01-exmp-004 stderr is empty');
 }
 
 {
@@ -214,9 +250,9 @@ preparations();
       File::Spec->catdir($tempdir, 'Data_99', 'nfound-999.txt'),
     );
 
-    like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 1\] \s -- \s+ \*\* \s not \s found \s \*\*}xms,                    'Case-008-01: co-prj01-nfnd-999 stdout contains not-found message');
-    is($rc, 0,                                                                                                   'Case-008-02: co-prj01-nfnd-999 rc is zero');
-    is($stderr, '',                                                                                              'Case-008-03: co-prj01-nfnd-999 stderr is empty');
+    like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 1\] \s -- \s+ \*\* \s not \s found \s \*\*}xms,                    'Case-008-09: co-prj01-nfnd-999 stdout contains not-found message');
+    is($rc, 0,                                                                                                   'Case-008-10: co-prj01-nfnd-999 rc is zero');
+    is($stderr, '',                                                                                              'Case-008-11: co-prj01-nfnd-999 stderr is empty');
 }
 
 # modifying the 2 files in Prj_01:
@@ -311,7 +347,7 @@ preparations();
 
 {
     my $dir = File::Spec->catdir($tempdir, 'Prj_02');
-    chdir $dir or die "Error-0040: Can't chdir '$dir' because $!";
+    chdir $dir or die "Error-0060: Can't chdir '$dir' because $!";
 }
 
 {
@@ -484,7 +520,7 @@ preparations();
 # ***************************
 
 {
-    do{ my $dir = File::Spec->catdir($tempdir, 'Prj_01'); chdir $dir or die "Error-0050: Can't chdir '$dir' because $!"; };
+    do{ my $dir = File::Spec->catdir($tempdir, 'Prj_01'); chdir $dir or die "Error-0070: Can't chdir '$dir' because $!"; };
     my_system($^X, File::Spec->catdir($mpath, 'vc_reset.pl'));
     my_system($^X, File::Spec->catdir($mpath, 'vc_apply.pl'));
 
@@ -603,7 +639,7 @@ preparations();
 # ***************************
 
 {
-    do{ my $dir = File::Spec->catdir($tempdir, 'Prj_02'); chdir $dir or die "Error-0060: Can't chdir '$dir' because $!"; };
+    do{ my $dir = File::Spec->catdir($tempdir, 'Prj_02'); chdir $dir or die "Error-0080: Can't chdir '$dir' because $!"; };
     my_system($^X, File::Spec->catdir($mpath, 'vc_reset.pl'));
     my_system($^X, File::Spec->catdir($mpath, 'vc_apply.pl'));
 
@@ -876,7 +912,7 @@ preparations();
 
 {
     my $dir = File::Spec->catdir($tempdir, 'Prj_03');
-    chdir $dir or die "Error-0062: Can't chdir '$dir' because $!";
+    chdir $dir or die "Error-0090: Can't chdir '$dir' because $!";
 }
 
 {
@@ -1040,6 +1076,55 @@ preparations();
     is($t3_content, 'Lin', 'Case-041-01: old content has been restored in test-003.txt');
 }
 
+# Test Case-042 and Case-043 have been added for version 0.08:
+# successfully checking out 2 files with the same name, but from different directories
+# ('Data_01/dupl.txt' and 'Data_02/dupl.txt') in Prj_04 via 'Work/B_Flist.xml'
+# *************************************************************************************
+
+{
+    my $dir = File::Spec->catdir($tempdir, 'Prj_04');
+    chdir $dir or die "Error-0100: Can't chdir '$dir' because $!";
+}
+
+{
+    write_file(File::Spec->catdir($tempdir, 'Prj_04', 'Work', 'B_Flist.xml'),
+      qq{<?xml version="1.0" encoding="iso-8859-1"?>\n},
+      qq{<checkout>\n},
+      qq{  <file name="}, File::Spec->catdir($tempdir, 'Data_01', 'dupl.txt'), qq{" />\n},
+      qq{  <file name="}, File::Spec->catdir($tempdir, 'Data_02', 'dupl.txt'), qq{" />\n},
+      qq{</checkout>\n},
+    );
+
+    ok( -e File::Spec->catdir('Work', 'B_Flist.xml'),     'Case-042-01: initially B_Flist.xml does exist under Work/');
+    ok(!-e File::Spec->catdir('Work', 'F_dupl_Z001.txt'), 'Case-042-02: initially F_dupl_Z001.txt does not exist under Work/');
+    ok(!-e File::Spec->catdir('Work', 'F_dupl_Z002.txt'), 'Case-042-03: initially F_dupl_Z002.txt does not exist under Work/');
+}
+
+{
+    my ($stdout, $stderr, $rc) = my_system($^X,
+      File::Spec->catdir($mpath, 'vc_checkout.pl'),
+    );
+
+    ok(-e File::Spec->catdir('Work', 'F_dupl_Z001.txt'),      'Case-043-01: after first co F_dupl_Z001.txt exists under Work/');
+    ok(-e File::Spec->catdir('Work', 'F_dupl_Z002.txt'),      'Case-043-02: after first co F_dupl_Z002.txt exists under Work/');
+
+    like($stdout, qr{^ Ckout \s \[ \s+ 1/ \s+ 2\] \s \*\* \s \S+ \s \*\* \s F_dupl_Z001 \.txt \s}xms,
+                                                              'Case-043-03: stdout contains first co message dupl_Z001');
+    like($stdout, qr{^ Ckout \s \[ \s+ 2/ \s+ 2\] \s \*\* \s \S+ \s \*\* \s F_dupl_Z002 \.txt \s}xms,
+                                                              'Case-043-04: stdout contains second co message dupl_Z002');
+    is($rc, 0,                                                'Case-043-05: first co rc is zero');
+    is($stderr, '',                                           'Case-043-06: first co stderr is empty');
+
+    my $dupl_z001 = read_file(File::Spec->catdir('Work', 'F_dupl_Z001.txt'), err_mode => 'quiet');
+    my $dupl_z002 = read_file(File::Spec->catdir('Work', 'F_dupl_Z002.txt'), err_mode => 'quiet');
+
+    chomp $dupl_z001;
+    chomp $dupl_z002;
+
+    is($dupl_z001, 'Dupl ::test::',                           'Case-043-07: dupl.txt Z001 contains >>Dupl ::test::<<');
+    is($dupl_z002, 'Dupl ::example::',                        'Case-043-08: dupl.txt Z002 contains >>Dupl ::example::<<');
+}
+
 # ****************************
 # These are the subroutines...
 # ****************************
@@ -1050,8 +1135,8 @@ sub preparations {
     # determine the shell quote $q ==> (") on Windows, (') everywhere else...
     $q = $^O eq 'MSWin32' ? q{"} : q{'};
 
-    $mpath    = get_mpath()    or die "Error-0070: Can't find 'vc_status.pl' in \@INC = (@INC)";
-    $difftool = get_difftool() or die "Error-0072: Can't find 'Algorithm/diffnew.pl' in \@INC = (@INC)";
+    $mpath    = get_mpath()    or die "Error-0110: Can't find 'vc_status.pl' in \@INC = (@INC)";
+    $difftool = get_difftool() or die "Error-0120: Can't find 'Algorithm/diffnew.pl' in \@INC = (@INC)";
 
     $tempdir = tempdir(CLEANUP => 1); END { chdir $cwd if defined $cwd; }
 
@@ -1074,6 +1159,7 @@ sub preparations {
     my_mkdir(File::Spec->catdir($tempdir, 'Prj_01'));
     my_mkdir(File::Spec->catdir($tempdir, 'Prj_02'));
     my_mkdir(File::Spec->catdir($tempdir, 'Prj_03'));
+    my_mkdir(File::Spec->catdir($tempdir, 'Prj_04'));
 
     my_mkdir(File::Spec->catdir($tempdir, 'Misc_01'));
     my_crmsc(File::Spec->catdir($tempdir, 'Misc_01'));
@@ -1084,25 +1170,25 @@ sub preparations {
 
     my ($stdout) = my_system($^X, File::Spec->catdir($mpath, 'vc_list.pl'));
 
-    my ($archname) = $stdout =~ m{^ Reading \s ([^\n]*) \n}xms or die "Error-0080: Can't extract 'Reading...' from '$stdout'";
+    my ($archname) = $stdout =~ m{^ Reading \s ([^\n]*) \n}xms or die "Error-0130: Can't extract 'Reading...' from '$stdout'";
 
     my @ele = File::Spec->splitdir($archname);
 
     unless (@ele >= 2) {
         local $" = "', '";
-        die "Error-0090: found dir = '$archname' with only ".scalar(@ele)." elements, but expected at least 2";
+        die "Error-0140: found dir = '$archname' with only ".scalar(@ele)." elements, but expected at least 2";
     }
 
     my $arch2 = $ele[-2];
 
     unless ($arch2 eq 'test_arch') {
-        die "Error-0100: found arch2 = '$arch2', but expected 'test_arch'";
+        die "Error-0150: found arch2 = '$arch2', but expected 'test_arch'";
     }
 }
 
 sub my_mkdir {
     unless (-d $_[0]) {
-        mkdir $_[0] or die "Error-0110: Can't mkdir '$_[0]' because $!";
+        mkdir $_[0] or die "Error-0160: Can't mkdir '$_[0]' because $!";
     }
 }
 
@@ -1110,11 +1196,21 @@ sub my_crdat {
     for my $fno (1..7) {
         my $filename = File::Spec->catdir($_[0], sprintf('%s-%03d.txt', $_[1], $fno));
 
-        open my $ofh, '>', $filename or die "Error-0120: Can't open > '$filename' because $!";
+        open my $ofh, '>', $filename or die "Error-0170: Can't open > '$filename' because $!";
 
         for my $dline (1..35) {
             say {$ofh} 'Line >>', $_[1], '<< ', sprintf('ctr=%04d', $dline);
         }
+
+        close $ofh;
+    }
+
+   {
+        my $filename = File::Spec->catdir($_[0], 'dupl.txt');
+
+        open my $ofh, '>', $filename or die "Error-0180: Can't open > '$filename' because $!";
+
+        say {$ofh} 'Dupl ::', $_[1], '::';
 
         close $ofh;
     }
@@ -1123,7 +1219,7 @@ sub my_crdat {
 sub my_crxml {
     my $filename = File::Spec->catdir($_[0], 'vc_parameter.xml');
 
-    open my $ofh, '>', $filename or die "Error-0130: Can't open > '$filename' because $!";
+    open my $ofh, '>', $filename or die "Error-0190: Can't open > '$filename' because $!";
 
     say {$ofh} '<?xml version="1.0" encoding="iso-8859-1"?>';
     say {$ofh} '<vc>';

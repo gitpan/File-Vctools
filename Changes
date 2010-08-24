@@ -52,3 +52,7 @@ Revision history for File-Vctools
 
 0.07    04 Aug 2010
         Add "EXE_FILES => [ 'bin/vc_apply.pl', 'bin/vc_checkout.pl', ... ] to Makefile.PL
+
+0.08    24 Aug 2010
+        Fix bug in vc_checkout.pl where two identical filenames in different directories
+        resulted in a single checkout file, one file content overwrote the other.

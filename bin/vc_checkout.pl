@@ -328,6 +328,9 @@ for my $name_rel (@flist) {
     for (1..999) {
         my $name_st = sprintf 'F_%s_Z%03d', $name_stem, $_;
         unless (exists $stemlist{lc $name_st}) {
+            # Begin: Klaus Eichner, 24-Aug-2010: fix duplicate checkout bug
+            $stemlist{lc $name_st} = 1;
+            # End  : Klaus Eichner, 24-Aug-2010: fix duplicate checkout bug
             $name_id = $name_st.$name_ext;
             last;
         }
