@@ -324,13 +324,11 @@ for my $name_rel (@flist) {
     # ***************************
 
     my $name_id;
+    my $name_st;
 
     for (1..999) {
-        my $name_st = sprintf 'F_%s_Z%03d', $name_stem, $_;
+        $name_st = sprintf 'F_%s_Z%03d', $name_stem, $_;
         unless (exists $stemlist{lc $name_st}) {
-            # Begin: Klaus Eichner, 24-Aug-2010: fix duplicate checkout bug
-            $stemlist{lc $name_st} = 1;
-            # End  : Klaus Eichner, 24-Aug-2010: fix duplicate checkout bug
             $name_id = $name_st.$name_ext;
             last;
         }
@@ -363,6 +361,10 @@ for my $name_rel (@flist) {
 
     printf "Ckout [%3d/%3d] ** Write ** %-30s << %s\n",
       $line_ctr, $line_max, $name_id, $showname;
+
+    # Begin: Klaus Eichner, 24-Aug-2010: fix duplicate checkout bug
+    $stemlist{lc $name_st} = 1;
+    # End  : Klaus Eichner, 24-Aug-2010: fix duplicate checkout bug
 
     my $stamp = localtime;
 

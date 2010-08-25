@@ -12,7 +12,7 @@ our @ISA         = qw(Exporter);
 our %EXPORT_TAGS = ( all => [ qw(get_difftool get_mpath) ] );
 our @EXPORT_OK   = ( @{ $EXPORT_TAGS{'all'} } );
 our @EXPORT      = qw();
-our $VERSION     = '0.08';
+our $VERSION     = '0.09';
 
 # =============================================================================================
 # This module is basically empty, its main purpose in life is to assemble all the different

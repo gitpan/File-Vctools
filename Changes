@@ -56,3 +56,8 @@ Revision history for File-Vctools
 0.08    24 Aug 2010
         Fix bug in vc_checkout.pl where two identical filenames in different directories
         resulted in a single checkout file, one file content overwrote the other.
+
+0.09    25 Aug 2010
+        The fix in version 0.08 had a minor problem: the internal counter to produce
+        a new checkout file was incremented too often. To be correct, the internal counter
+        in vc_checkout.pl is incremented only if the current checkout file is permanent.
